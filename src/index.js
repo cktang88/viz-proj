@@ -7,7 +7,8 @@ NOTE: the data processing methods in loadData() are SPECIFIC to data derived fro
 */
 
 var header = {};
-var elements = []
+var elements = [];
+var sets = {};
 
 // execute main method
 try {
@@ -21,7 +22,7 @@ function loadData() {
     // load headers
     d3.csv('./data/zoo-header.csv')
         .then(function (data) {
-            console.log(data);
+            // console.log(data);
             data.forEach(e => {
                 // complicated method to add attributes to `headers` hashmap
                 let keys = Object.keys(e);
@@ -44,7 +45,7 @@ function loadData() {
     // load body elements
     d3.csv('./data/zoo-body.csv')
         .then(function (data) {
-            console.log(data);
+            // console.log(data);
             // structure data elements properly
             data.forEach(e => {
                 
@@ -57,11 +58,20 @@ function loadData() {
                 elements.push(obj)
                 // console.log(elements)
             })
-            plot_it();
-        })
-        .then(() => {
             console.log('elements: ')
             console.log(elements)
+
+            Object.keys(header).forEach(e  => {
+                let attr = header[e].attribute;
+                if(attr in sets) // don't recompute repeated attrs
+                    return;
+                sets[attr] = [];
+            });
+            console.log('sets: ')
+            console.log(sets)
+
+            // plot
+            plot_it();
         })
         .catch(err => console.error(err))
 }
