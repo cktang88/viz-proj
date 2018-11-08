@@ -50,8 +50,8 @@ function loadData() {
                 
                 let obj = {};
                 for (var key in e) {
-                    let val = e[key]
-                    obj[val] = header[val]
+                    let h = header[e[key]]
+                    obj[h.attribute] = h.value;
                 }
                 // console.log(obj)
                 elements.push(obj)
