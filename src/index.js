@@ -2,9 +2,12 @@
 data cleaning: split each .txt into header (category names) and body (data) segments
 manually replace quotation marks, colons, equal signs, anything that isn't useful
 note: .txt to .csv conversion done via https://www.browserling.com/tools/text-to-csv
+
+NOTE: the data processing methods in loadData() are SPECIFIC to data derived from https://dtai.cs.kuleuven.be/CP4IM/datasets/
 */
 
-let header;
+var header = {};
+var elements = []
 
 // execute main method
 try {
@@ -15,27 +18,52 @@ try {
 
 // main method
 function loadData() {
+    // load headers
     d3.csv('./data/zoo-header.csv')
         .then(function (data) {
             console.log(data);
             data.forEach(e => {
+                // complicated method to add attributes to `headers` hashmap
                 let keys = Object.keys(e);
-                header[keys[0]] = {
+                // console.log(keys);
+                let obj = {
                     attribute: e[keys[1]],
                     value: e[keys[2]]
-                }
-                console.log(header[keys[0]])
+                };
+                // console.log(obj)
+                header[e[keys[0]]] = obj;
+                // console.log(header)
             });
         })
         .then(() => {
-            console.log('headers: ' + header)
+            console.log('headers: ')
+            console.log(header)
         })
+        .catch(err => console.error(err))
 
+    // load body elements
     d3.csv('./data/zoo-body.csv')
         .then(function (data) {
             console.log(data);
+            // structure data elements properly
+            data.forEach(e => {
+                
+                let obj = {};
+                for (var key in e) {
+                    let val = e[key]
+                    obj[val] = header[val]
+                }
+                // console.log(obj)
+                elements.push(obj)
+                // console.log(elements)
+            })
             plot_it();
         })
+        .then(() => {
+            console.log('elements: ')
+            console.log(elements)
+        })
+        .catch(err => console.error(err))
 }
 
 // plot
