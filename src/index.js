@@ -89,6 +89,9 @@ function plot_it()  {
     // color of each false pixel
     const baseColor = "#3a3a3a";
 
+    d3.select(".header").append('h1').style('text-align',"center").text(`OnSet Data Visualization`)
+    d3.select(".header").append('p').style('text-align',"center").text(`Kwuang Tang and Kevin Jin, Course 3891 Intro to Visualization`)
+
     // number of rows and columns
     let rowcolNum = numberOfRowsCol(elements.length)
     console.log(elements.length, rowcolNum)
@@ -99,7 +102,7 @@ function plot_it()  {
     
     // function to plot each pixelLayer
     let plotPixelLayer = (attr) => {
-        let pixelLayer = d3.select('body').append('svg').attr('width', width).attr('height', height+textPad).style("margin",`${margin}px`)
+        let pixelLayer = d3.select('.container').append('svg').attr('width', width).attr('height', height+textPad).style("margin",`${margin}px`)
         var main = pixelLayer.append('g').attr('transform', 'translate(0,'+textPad+')')
         pixelLayer.append('text').attr('x', width/2).attr('y', 15).attr('text-anchor', 'middle').attr('font-size', '15px').attr('font-weight',"bold")
             .text(`${attr}`)
