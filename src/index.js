@@ -76,7 +76,57 @@ function loadData() {
         .catch(err => console.error(err))
 }
 
-// plot
-function plot_it() {
-    console.log('plotting...')
+// plot all
+function plot_it()  {
+    standardizeData() // This is specific to the animal dataset, convert # legs to true/false value
+
+    // user defined parameters
+    const width = 200, height = 200;
+    const margin = 2.5;
+    const textPad = 20;
+    // color of each true pixel
+    const pixelColor = "#9fe9fc";
+    // color of each false pixel
+    const baseColor = "#3a3a3a";
+
+    // number of rows and columns
+    let rowcolNum = numberOfRowsCol(elements.length)
+    console.log(elements.length, rowcolNum)
+    // pixel width and X position
+    let xScale = d3.scaleLinear().domain([0,rowcolNum]).rangeRound([0,width])
+    // pixel height and Y position
+    let yScale = d3.scaleLinear().domain([0,rowcolNum]).rangeRound([0,height])
+    
+    // function to plot each pixelLayer
+    let plotPixelLayer = (attr) => {
+        let pixelLayer = d3.select('body').append('svg').attr('width', width).attr('height', height+textPad).style("margin",`${margin}px`)
+        var main = pixelLayer.append('g').attr('transform', 'translate(0,'+textPad+')')
+        pixelLayer.append('text').attr('x', width/2).attr('y', 15).attr('text-anchor', 'middle').attr('font-size', '15px').attr('font-weight',"bold")
+            .text(`${attr}`)
+        main.append("g").selectAll(`pixel ${attr}`).data(elements).enter().append("rect")
+            .attr("y", (d,i) => yScale(Math.floor(i/rowcolNum)))
+            .attr("x", (d,i) => xScale(i%rowcolNum))
+            .attr("width", xScale(1))
+            .attr("height", yScale(1))
+            .attr("fill", (d) => d[attr]=="true" ? pixelColor : baseColor)
+            .attr("class", `pixel ${attr}`)
+    } 
+
+    // plot a pixelLayer for each animal attribute
+    Object.keys(elements[0]).forEach((key) => {
+        plotPixelLayer(key);
+    })
+       
+}
+
+// This standarization of data method is specific to the animal data set
+function standardizeData() {
+    elements.forEach((element) => {
+        element.legs = element.legs > 2 ? "true" : "false";
+    });
+}
+
+// number of rows and columns calculated
+function numberOfRowsCol(totalElements) {
+    return Math.ceil(Math.sqrt(totalElements));
 }
