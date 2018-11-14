@@ -76,51 +76,52 @@ function loadData() {
         .catch(err => console.error(err))
 }
 
-// plot all
-function plot_it() {
-    standardizeData() // This is specific to the animal dataset, convert # legs to true/false value
+// function to plot each pixelLayer
+const plotPixelLayer = (attr) => {
+
+    // number of rows and columns
+    const rowcolNum = numberOfRowsCol(elements.length);
+    console.log(elements.length, rowcolNum);
 
     // user defined parameters
-    const width = 200,
-        height = 200,
+    const width = 100,
+        height = width,
         margin = 2.5,
         textPad = 20,
         pixelColor = "#9fe9fc", // color of each true pixel
         baseColor = "#3a3a3a"; // color of each false pixel
 
-    // number of rows and columns
-    const rowcolNum = numberOfRowsCol(elements.length),
-        layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
+    const layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
         xScale = layerScale([0, width]), // pixel width and X position
         yScale = layerScale([0, height]) // pixel height and Y position
 
-    console.log(elements.length, rowcolNum)
+    const pixelLayer = d3.select('.container').append('svg')
+        .attr('width', width)
+        .attr('height', height + textPad)
+        .style("margin", `${margin}px`)
 
-    // function to plot each pixelLayer
-    const plotPixelLayer = (attr) => {
-        const pixelLayer = d3.select('.container').append('svg')
-            .attr('width', width)
-            .attr('height', height + textPad)
-            .style("margin", `${margin}px`)
+    const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
-        const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
+    pixelLayer.append('text')
+        .attr('x', width / 2)
+        .attr('y', 15)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '15px')
+        .attr('font-weight', "bold")
+        .text(`${attr}`)
 
-        pixelLayer.append('text')
-            .attr('x', width / 2)
-            .attr('y', 15)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '15px')
-            .attr('font-weight', "bold")
-            .text(`${attr}`)
+    main.append("g").selectAll(`pixel ${attr}`).data(elements).enter().append("rect")
+        .attr("y", (d, i) => yScale(Math.floor(i / rowcolNum)))
+        .attr("x", (d, i) => xScale(i % rowcolNum))
+        .attr("width", xScale(1))
+        .attr("height", yScale(1))
+        .attr("fill", (d) => d[attr] == "true" ? pixelColor : baseColor)
+        .attr("class", `pixel ${attr}`)
+}
 
-        main.append("g").selectAll(`pixel ${attr}`).data(elements).enter().append("rect")
-            .attr("y", (d, i) => yScale(Math.floor(i / rowcolNum)))
-            .attr("x", (d, i) => xScale(i % rowcolNum))
-            .attr("width", xScale(1))
-            .attr("height", yScale(1))
-            .attr("fill", (d) => d[attr] == "true" ? pixelColor : baseColor)
-            .attr("class", `pixel ${attr}`)
-    }
+// plot all
+function plot_it() {
+    standardizeData() // This is specific to the animal dataset, convert # legs to true/false value
 
     // plot a pixelLayer for each animal attribute
     Object.keys(elements[0]).forEach((key) => {
