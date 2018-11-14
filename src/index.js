@@ -48,7 +48,7 @@ function loadData() {
             // console.log(data);
             // structure data elements properly
             data.forEach(e => {
-                
+
                 let obj = {};
                 for (var key in e) {
                     let h = header[e[key]]
@@ -61,9 +61,9 @@ function loadData() {
             console.log('elements: ')
             console.log(elements)
 
-            Object.keys(header).forEach(e  => {
+            Object.keys(header).forEach(e => {
                 let attr = header[e].attribute;
-                if(attr in sets) // don't recompute repeated attrs
+                if (attr in sets) // don't recompute repeated attrs
                     return;
                 sets[attr] = [];
             });
@@ -77,55 +77,90 @@ function loadData() {
 }
 
 // plot all
-function plot_it()  {
+function plot_it() {
     standardizeData() // This is specific to the animal dataset, convert # legs to true/false value
 
     // user defined parameters
-    const width = 200, height = 200;
-    const margin = 2.5;
-    const textPad = 20;
-    // color of each true pixel
-    const pixelColor = "#9fe9fc";
-    // color of each false pixel
-    const baseColor = "#3a3a3a";
-
-    d3.select(".header").append('h1').style('text-align',"center").text(`OnSet Data Visualization`)
-    d3.select(".header").append('p').style('text-align',"center").text(`Kwuang Tang and Kevin Jin, Course 3891 Intro to Visualization`)
+    const width = 200,
+        height = 200,
+        margin = 2.5,
+        textPad = 20,
+        pixelColor = "#9fe9fc", // color of each true pixel
+        baseColor = "#3a3a3a"; // color of each false pixel
 
     // number of rows and columns
-    let rowcolNum = numberOfRowsCol(elements.length)
+    const rowcolNum = numberOfRowsCol(elements.length),
+        layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
+        xScale = layerScale([0, width]), // pixel width and X position
+        yScale = layerScale([0, height]) // pixel height and Y position
+
     console.log(elements.length, rowcolNum)
-    // pixel width and X position
-    let xScale = d3.scaleLinear().domain([0,rowcolNum]).rangeRound([0,width])
-    // pixel height and Y position
-    let yScale = d3.scaleLinear().domain([0,rowcolNum]).rangeRound([0,height])
-    
+
     // function to plot each pixelLayer
-    let plotPixelLayer = (attr) => {
-        let pixelLayer = d3.select('.container').append('svg').attr('width', width).attr('height', height+textPad).style("margin",`${margin}px`)
-        var main = pixelLayer.append('g').attr('transform', 'translate(0,'+textPad+')')
-        pixelLayer.append('text').attr('x', width/2).attr('y', 15).attr('text-anchor', 'middle').attr('font-size', '15px').attr('font-weight',"bold")
+    const plotPixelLayer = (attr) => {
+        const pixelLayer = d3.select('.container').append('svg')
+            .attr('width', width)
+            .attr('height', height + textPad)
+            .style("margin", `${margin}px`)
+
+        const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
+
+        pixelLayer.append('text')
+            .attr('x', width / 2)
+            .attr('y', 15)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '15px')
+            .attr('font-weight', "bold")
             .text(`${attr}`)
+
         main.append("g").selectAll(`pixel ${attr}`).data(elements).enter().append("rect")
-            .attr("y", (d,i) => yScale(Math.floor(i/rowcolNum)))
-            .attr("x", (d,i) => xScale(i%rowcolNum))
+            .attr("y", (d, i) => yScale(Math.floor(i / rowcolNum)))
+            .attr("x", (d, i) => xScale(i % rowcolNum))
             .attr("width", xScale(1))
             .attr("height", yScale(1))
-            .attr("fill", (d) => d[attr]=="true" ? pixelColor : baseColor)
+            .attr("fill", (d) => d[attr] == "true" ? pixelColor : baseColor)
             .attr("class", `pixel ${attr}`)
-    } 
+    }
 
     // plot a pixelLayer for each animal attribute
     Object.keys(elements[0]).forEach((key) => {
         plotPixelLayer(key);
     })
-       
+
+}
+
+const JoinType = {
+    AND: 0,
+    OR: 1
+}
+
+/**
+ * 
+ * @param {String} a First attribute
+ * @param {String} b Second attribute
+ * @param {JoinType} joinType type of join (AND/OR)
+ */
+function combineLayer(a, b, joinType) {
+    // when combining, basically create new layer, delete BOTH old layers
+
+    if (a.type === 'OR' && b.type === 'OR') {
+        // combine two OR graphs = special case
+        // each pixel = sum of corresponding two pixels
+    } else {
+        // combine AND + orig, orig + orig, AND + AND
+        // still add pixels, so when doing OR with heavily weighted graph, correct luminosity
+    }
+    elements.forEach(e => {
+
+    })
+
 }
 
 // This standarization of data method is specific to the animal data set
 function standardizeData() {
-    elements.forEach((element) => {
-        element.legs = element.legs > 2 ? "true" : "false";
+    // generalize later for different data sets --> stretch goal
+    elements.forEach(e => {
+        e.legs = e.legs > 2 ? "true" : "false";
     });
 }
 
