@@ -65,7 +65,9 @@ function loadData() {
                 let attr = header[e].attribute;
                 if (attr in sets) // don't recompute repeated attrs
                     return;
-                sets[attr] = {data: []};
+                sets[attr] = {
+                    data: []
+                };
             });
             console.log('sets: ')
             console.log(sets)
@@ -78,12 +80,12 @@ function loadData() {
 
 function assignColors() {
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-    console.log(colorScale)
+    // console.log(colorScale)
     Object.keys(sets).forEach((attr, i) => {
         sets[attr].color = colorScale(i)
-        console.log(sets[attr])
+        // console.log(sets[attr])
     })
-    console.log(sets)
+    // console.log(sets)
 }
 
 // function to plot each pixelLayer
@@ -91,7 +93,7 @@ const plotPixelLayer = (attr) => {
 
     // number of rows and columns
     const rowcolNum = numberOfRowsCol(elements.length);
-    console.log(elements.length, rowcolNum);
+    // console.log(elements.length, rowcolNum);
 
     // user defined parameters
     const width = 100,
@@ -127,6 +129,14 @@ const plotPixelLayer = (attr) => {
         .attr("height", yScale(1))
         .attr("fill", d => d[attr] > 0 ? sets[attr].color : baseColor)
         .attr("class", `pixel ${attr}`)
+        .attr("style", d => d.hoverOver ? "outline: thin solid red;" : "outline: none;")
+
+        // mouse hover pixel anim
+        .on('mouseover', d => {
+            d.hoverOver = true
+            console.log(d)
+        })
+        .on('mouseout', d => d.hoverOver = false)
 }
 
 // plot all
@@ -151,9 +161,10 @@ const JoinType = {
  * @param {JoinType} joinType type of join (AND/OR)
  */
 function combineLayer(a, b, joinType) {
-    // when combining, basically make B the new layer, delete A
+    // when combining, basically make B the new layer
+    // A is unchanged...
     if (!joinType)
-    console.error(`Undefined join type.`)
+        console.error(`Undefined join type.`)
     elements.forEach(e => {
         // if OR: add values
         if (joinType === JoinType.OR)
@@ -162,7 +173,7 @@ function combineLayer(a, b, joinType) {
         if (joinType === JoinType.AND)
             e[b] = (e[b] * e[a] === 0) ? 0 : e[a] + e[b];
     })
-    b.lastJoinType = joinType; // record last join type, to display properly
+    sets[b].lastJoinType = joinType; // record last join type of B, to display properly
 }
 
 // converts all values to binary values
