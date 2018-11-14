@@ -146,8 +146,12 @@ function combineLayer(a, b, joinType) {
     if (!joinType)
     console.error(`Undefined join type.`)
     elements.forEach(e => {
-        // always add values, the heavy lifting is in display function
-        e[b] += e[a];
+        // if OR: add values
+        if (joinType === JoinType.OR)
+            e[b] += e[a]
+        // if AND: if either zero, new val = 0, else add values
+        if (joinType === JoinType.AND)
+            e[b] = (e[b] * e[a] === 0) ? 0 : e[a] + e[b];
     })
     b.lastJoinType = joinType; // record last join type, to display properly
 }
