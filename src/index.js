@@ -8,7 +8,7 @@ NOTE: the data processing methods in loadData() are SPECIFIC to data derived fro
 
 var header = {};
 var elements = [];
-var sets = {};
+var sets = {}; // dict of {attr: {attribute data obj}}
 
 // execute main method
 try {
@@ -52,7 +52,7 @@ function loadData() {
                 let obj = {};
                 for (var key in e) {
                     let h = header[e[key]]
-                    obj[h.attribute] = h.value;
+                    obj[h.attribute] = +(h.value === "true"); // convert from "true"/"false" to 0/1
                 }
                 // console.log(obj)
                 elements.push(obj)
@@ -65,15 +65,25 @@ function loadData() {
                 let attr = header[e].attribute;
                 if (attr in sets) // don't recompute repeated attrs
                     return;
-                sets[attr] = [];
+                sets[attr] = {data: []};
             });
             console.log('sets: ')
             console.log(sets)
-
-            // plot
-            plot_it();
         })
+        .then(normalizeToBinary) // This is specific to the animal dataset, convert # legs to true/false value
+        .then(assignColors) // assign colors for each attr
+        .then(plot_it) // plot
         .catch(err => console.error(err))
+}
+
+function assignColors() {
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+    console.log(colorScale)
+    Object.keys(sets).forEach((attr, i) => {
+        sets[attr].color = colorScale(i)
+        console.log(sets[attr])
+    })
+    console.log(sets)
 }
 
 // function to plot each pixelLayer
@@ -115,13 +125,12 @@ const plotPixelLayer = (attr) => {
         .attr("x", (d, i) => xScale(i % rowcolNum))
         .attr("width", xScale(1))
         .attr("height", yScale(1))
-        .attr("fill", (d) => d[attr] == "true" ? pixelColor : baseColor)
+        .attr("fill", d => d[attr] > 0 ? sets[attr].color : baseColor)
         .attr("class", `pixel ${attr}`)
 }
 
 // plot all
 function plot_it() {
-    standardizeData() // This is specific to the animal dataset, convert # legs to true/false value
 
     // plot a pixelLayer for each animal attribute
     Object.keys(elements[0]).forEach((key) => {
@@ -156,11 +165,12 @@ function combineLayer(a, b, joinType) {
     b.lastJoinType = joinType; // record last join type, to display properly
 }
 
-// This standarization of data method is specific to the animal data set
-function standardizeData() {
+// converts all values to binary values
+function normalizeToBinary() {
     // generalize later for different data sets --> stretch goal
+    // This standarization of data method is specific to the animal data set
     elements.forEach(e => {
-        e.legs = e.legs > 2 ? "true" : "false";
+        e.legs = e.legs > 2 ? 1 : 0;
     });
 }
 
