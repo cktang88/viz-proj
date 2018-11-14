@@ -107,7 +107,7 @@ const plotPixelLayer = (attr) => {
         .attr('y', 15)
         .attr('text-anchor', 'middle')
         .attr('font-size', '15px')
-        .attr('font-weight', "bold")
+        //.attr('font-weight', "bold")
         .text(`${attr}`)
 
     main.append("g").selectAll(`pixel ${attr}`).data(elements).enter().append("rect")
@@ -142,19 +142,14 @@ const JoinType = {
  * @param {JoinType} joinType type of join (AND/OR)
  */
 function combineLayer(a, b, joinType) {
-    // when combining, basically create new layer, delete BOTH old layers
-
-    if (a.type === 'OR' && b.type === 'OR') {
-        // combine two OR graphs = special case
-        // each pixel = sum of corresponding two pixels
-    } else {
-        // combine AND + orig, orig + orig, AND + AND
-        // still add pixels, so when doing OR with heavily weighted graph, correct luminosity
-    }
+    // when combining, basically make B the new layer, delete A
+    if (!joinType)
+    console.error(`Undefined join type.`)
     elements.forEach(e => {
-
+        // always add values, the heavy lifting is in display function
+        e[b] += e[a];
     })
-
+    b.lastJoinType = joinType; // record last join type, to display properly
 }
 
 // This standarization of data method is specific to the animal data set
