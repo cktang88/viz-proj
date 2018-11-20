@@ -89,7 +89,7 @@ function assignColors() {
 }
 
 // function to plot each pixelLayer
-const plotPixelLayer = (attr) => {
+const plotPixelLayer = (attr,index) => {
 
     // number of rows and columns
     const rowcolNum = numberOfRowsCol(elements.length);
@@ -107,10 +107,20 @@ const plotPixelLayer = (attr) => {
         xScale = layerScale([0, width]), // pixel width and X position
         yScale = layerScale([0, height]) // pixel height and Y position
 
+    let y = 0
     const pixelLayer = d3.select('.container').append('svg')
         .attr('width', width)
         .attr('height', height + textPad)
         .style("margin", `${margin}px`)
+        .attr("x", ()=> {
+            let currOut = index*(width+margin)+width
+            if (Math.floor(currOut/screen.width)!=Math.floor(((index-1)*(width+margin)+width)/screen.width)) {
+                this.offset = -1*((currOut%screen.width)-width)
+            }
+            y = Math.floor(currOut/screen.width)
+            return (currOut%screen.width)-width+this.offset
+        })
+        .attr("y", (y*(width+textPad+margin)))
 
     const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
@@ -137,16 +147,34 @@ const plotPixelLayer = (attr) => {
             console.log(d)
         })
         .on('mouseout', d => d.hoverOver = false)
+
+    pixelLayer.call(d3.drag()
+    .on("start", function() {
+        this.parentElement.appendChild(this); // bring to front
+    })
+    .on("drag", function() {
+        d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
+    })
+    // .on("end", function() {
+        
+    // })
+    );
 }
 
 // plot all
 function plot_it() {
 
     // plot a pixelLayer for each animal attribute
+    let i = 0
+    setOffset();
     Object.keys(elements[0]).forEach((key) => {
-        plotPixelLayer(key);
+        plotPixelLayer(key,i);
+        i+=1
     })
+}
 
+const setOffset = () => {
+    this.offset = 0;
 }
 
 const JoinType = {
