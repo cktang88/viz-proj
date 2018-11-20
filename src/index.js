@@ -116,6 +116,7 @@ const plotPixelLayer = (attr,index) => {
     const pixelLayer = d3.select('.container').append('svg')
         .attr('width', width)
         .attr('height', height + textPad)
+        .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
             let currOut = index*(width+margin)+width
@@ -154,15 +155,15 @@ const plotPixelLayer = (attr,index) => {
         .on('mouseout', d => d.hoverOver = false)
 
     pixelLayer.call(d3.drag()
-    .on("start", function() {
-        this.parentElement.appendChild(this); // bring to front
-    })
-    .on("drag", function() {
-        d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
-    })
-    .on("end", function() {
-        console.log('dropped.')
-    })
+        .on("start", function() {
+            this.parentElement.appendChild(this); // bring to front
+        })
+        .on("drag", function() {
+            d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
+        })
+        .on("end", function() {
+            console.log('dropped.', this.id);
+        })
     );
 }
 
