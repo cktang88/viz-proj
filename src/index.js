@@ -107,18 +107,19 @@ const plotPixelLayer = (attr,index) => {
         xScale = layerScale([0, width]), // pixel width and X position
         yScale = layerScale([0, height]) // pixel height and Y position
 
-    let y = 0
+    let y = 0;
+    let WINDOW_WIDTH = window.innerWidth;
     const pixelLayer = d3.select('.container').append('svg')
         .attr('width', width)
         .attr('height', height + textPad)
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
             let currOut = index*(width+margin)+width
-            if (Math.floor(currOut/screen.width)!=Math.floor(((index-1)*(width+margin)+width)/screen.width)) {
-                this.offset = -1*((currOut%screen.width)-width)
+            if (Math.floor(currOut/WINDOW_WIDTH)!=Math.floor(((index-1)*(width+margin)+width)/WINDOW_WIDTH)) {
+                this.offset = -1*((currOut%WINDOW_WIDTH)-width)
             }
-            y = Math.floor(currOut/screen.width)
-            return (currOut%screen.width)-width+this.offset
+            y = Math.floor(currOut/WINDOW_WIDTH)
+            return (currOut%WINDOW_WIDTH)-width+this.offset
         })
         .attr("y", (y*(width+textPad+margin)))
 
