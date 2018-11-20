@@ -52,7 +52,11 @@ function loadData() {
                 let obj = {};
                 for (var key in e) {
                     let h = header[e[key]]
-                    obj[h.attribute] = +(h.value === "true"); // convert from "true"/"false" to 0/1
+                    if (h.value === "true" || h.value === "false") {
+                        obj[h.attribute] = +(h.value === "true"); // convert from "true"/"false" to 0/1
+                    }
+                    else obj[h.attribute] = h.value;
+                    // anything that isn't true/false will be normalized later
                 }
                 // console.log(obj)
                 elements.push(obj)
@@ -112,6 +116,7 @@ const plotPixelLayer = (attr,index) => {
     const pixelLayer = d3.select('.container').append('svg')
         .attr('width', width)
         .attr('height', height + textPad)
+        .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
             let currOut = index*(width+margin)+2*width
@@ -150,7 +155,7 @@ const plotPixelLayer = (attr,index) => {
         // mouse hover pixel anim
         .on('mouseover', d => {
             d.hoverOver = true
-            console.log(d)
+            //console.log(d)
         })
         .on('mouseout', d => d.hoverOver = false)
 
