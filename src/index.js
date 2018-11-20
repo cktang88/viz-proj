@@ -108,19 +108,25 @@ const plotPixelLayer = (attr,index) => {
         yScale = layerScale([0, height]) // pixel height and Y position
 
     let y = 0
+    let x = 0
     const pixelLayer = d3.select('.container').append('svg')
         .attr('width', width)
         .attr('height', height + textPad)
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
-            let currOut = index*(width+margin)+width
-            if (Math.floor(currOut/screen.width)!=Math.floor(((index-1)*(width+margin)+width)/screen.width)) {
-                this.offset = -1*((currOut%screen.width)-width)
+            let currOut = index*(width+margin)+2*width
+            if (Math.floor(currOut/screen.width)!=Math.floor(((index-1)*(width+margin)+2*width)/screen.width)) {
+                this.offset = -1*((currOut%screen.width)-2*width)
             }
             y = Math.floor(currOut/screen.width)
-            return (currOut%screen.width)-width+this.offset
+            x = (currOut%screen.width)-2*width+this.offset
+            return x
         })
-        .attr("y", (y*(width+textPad+margin)))
+        .attr("y", ()=> {
+            y = y*(width+textPad+margin)
+            return y
+        })
+    this.pLAndLoc.push({x: x, y: y, pixelLayer: pixelLayer})
 
     const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
@@ -138,7 +144,7 @@ const plotPixelLayer = (attr,index) => {
         .attr("width", xScale(1))
         .attr("height", yScale(1))
         .attr("fill", d => d[attr] > 0 ? sets[attr].color : baseColor)
-        .attr("class", `pixel ${attr}`)
+        .attr("class", `pixel`)
         .attr("style", d => d.hoverOver ? "outline: thin solid red;" : "outline: none;")
 
         // mouse hover pixel anim
@@ -155,10 +161,25 @@ const plotPixelLayer = (attr,index) => {
     .on("drag", function() {
         d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
     })
-    // .on("end", function() {
-        
-    // })
+    .on("end", function() {
+        let layerOne = d3.select(this)
+        let mouseLoc = [d3.mouse(this)[0], d3.mouse(this)[1]]
+        let layerTwo = getPixelLayerAtLoc(mouseLoc, width);
+        if (!layerTwo) return
+        console.log("layer 1 anad 2")
+        console.log(layerOne)
+        console.log(layerTwo)
+    })
     );
+}
+
+let getPixelLayerAtLoc = (location,pixelWidth) => {
+    return this.pLAndLoc.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
+}
+let updatePixelLocation = (pixelLayer, location) => {
+    let obj = this.pLAndLoc.find((obj) => obj.pixelLayer == pixelLayer)
+    obj.x = location[0]
+    obj.y = location[1]
 }
 
 // plot all
@@ -166,15 +187,16 @@ function plot_it() {
 
     // plot a pixelLayer for each animal attribute
     let i = 0
-    setOffset();
+    setGlobalVars();
     Object.keys(elements[0]).forEach((key) => {
         plotPixelLayer(key,i);
         i+=1
     })
 }
 
-const setOffset = () => {
+const setGlobalVars = () => {
     this.offset = 0;
+    this.pLAndLoc = [];
 }
 
 const JoinType = {
