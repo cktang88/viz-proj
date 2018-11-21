@@ -113,6 +113,7 @@ const plotPixelLayer = (attr,index) => {
 
     let y = 0
     let x = 0
+    let topLayer;
     const pixelLayer = d3.select('.container').append('svg')
         .attr('width', width)
         .attr('height', height + textPad)
@@ -131,7 +132,9 @@ const plotPixelLayer = (attr,index) => {
             y = y*(width+textPad+margin)
             return y
         })
-    this.layers.push({x: x, y: y, pixelLayer: pixelLayer})
+    
+        // the label will be more complex for combined layers
+    this.layers.push({x: x, y: y, label: attr, pixelLayer: pixelLayer})
 
     const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
@@ -162,20 +165,23 @@ const plotPixelLayer = (attr,index) => {
     pixelLayer.call(d3.drag()
     .on("start", function() {
         this.parentElement.appendChild(this); // bring to front
+
+        topLayer = findd3PixelLayer(this.id)
+        console.log('toplayer: ', topLayer)
     })
     .on("drag", function() {
         d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
     })
     .on("end", function() {
-        let layerOne = findd3PixelLayer(d3.select(this))
         let mouseLoc = [d3.mouse(this)[0], d3.mouse(this)[1]]
         let layerTwo = getPixelLayerAtLoc(mouseLoc, width);
         if (!layerTwo) {
             console.log('layer2 not found.')
             return
         }
+        updatePixelLocation(topLayer, mouseLoc)
         console.log("layer 1 and 2:")
-        console.log(layerOne)
+        console.log(topLayer)
         console.log(layerTwo)
     })
     );
@@ -185,13 +191,14 @@ let getPixelLayerAtLoc = (location,pixelWidth) => {
     return this.layers.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
 }
 let updatePixelLocation = (pixelLayer, location) => {
-    let obj = this.layers.find((obj) => obj.pixelLayer == pixelLayer)
+    console.log(pixelLayer)
+    let obj = this.layers.find((e) => e.pixelLayer == pixelLayer)
     obj.x = location[0]
     obj.y = location[1]
 }
 
-let findd3PixelLayer = (d3pixelLayer) => {
-    return this.layers.find((obj) => Object.is(obj.pixelLayer, d3pixelLayer))
+let findd3PixelLayer = (layerID) => {
+    return this.layers.find((obj) => obj.label === layerID)
 }
 
 // plot all
