@@ -103,9 +103,8 @@ const plotPixelLayer = (attr,index) => {
     const width = 100,
         height = width,
         margin = 2.5,
-        textPad = 20,
-        pixelColor = "#9fe9fc", // color of each true pixel
-        baseColor = "#3a3a3a"; // color of each false pixel
+        textPad = 20
+    this.baseColor = "#3a3a3a"; // color of each false pixel
 
     const layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
         xScale = layerScale([0, width]), // pixel width and X position
@@ -133,8 +132,15 @@ const plotPixelLayer = (attr,index) => {
             return y
         })
     
-        // the label will be more complex for combined layers
-    this.layers.push({x: x, y: y, label: attr, pixelLayer: pixelLayer})
+    
+    // the label will be more complex for combined layers
+    this.layers.push({
+        x: x, 
+        y: y, 
+        label: attr, 
+        pixelLayer: pixelLayer,
+        data: elements.map((e) => e[attr] > 0 ? 1 : 0)
+    })
 
     const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
@@ -146,28 +152,31 @@ const plotPixelLayer = (attr,index) => {
         //.attr('font-weight', "bold")
         .text(`${attr}`)
 
-    main.append("g").selectAll(`pixel ${attr}`).data(elements).enter().append("rect")
+    main.append("g").selectAll(`.pixel`).data(elements).enter().append("rect")
         .attr("y", (d, i) => yScale(Math.floor(i / rowcolNum)))
         .attr("x", (d, i) => xScale(i % rowcolNum))
         .attr("width", xScale(1))
         .attr("height", yScale(1))
         .attr("fill", d => d[attr] > 0 ? sets[attr].color : baseColor)
-        .attr("class", `pixel`)
+        .attr("class",(d, i) => `pixel i${i}`)
+        .attr("pixelattr", attr)
 
         // mouse hover pixel anim
-        .on('mouseover', function(d) {
-            console.log(d, this)
-            d3.select(this).attr("stroke", "white").style("stroke-width", 2)
+        .on('mouseover', function(d,i) {
+            // console.log(d, this)
+            // d3.select(this).attr("stroke", "white").style("stroke-width", 2)
+            highlightPixel(i, true)
         })
-        .on('mouseout', function() {
-            d3.select(this).attr("stroke", "none")
+        .on('mouseout', function(d,i) {
+            // d3.select(this).attr("stroke", "none")
+            highlightPixel(i, false)
         })
 
     pixelLayer.call(d3.drag()
     .on("start", function() {
         this.parentElement.appendChild(this); // bring to front
-
-        topLayer = findd3PixelLayer(this.id)
+        console.log(`$ This is the id ${this.id}`)
+        topLayer = findPixelLayerByID(this.id)
         console.log('toplayer: ', topLayer)
     })
     .on("drag", function() {
@@ -192,6 +201,7 @@ const plotPixelLayer = (attr,index) => {
         console.log("layer 1 and 2:")
         console.log(topLayer)
         console.log(layerTwo)
+        combineLayer(topLayer, layerTwo, JoinType.AND)
 
         // combine layers
         // TODO: enable choosing AND/OR join types via HTML checkbox/input field
@@ -201,16 +211,39 @@ const plotPixelLayer = (attr,index) => {
     );
 }
 
+let highlightPixel = (index,onOff) => {
+    d3.select('.container').selectAll(`.pixel.i${index}`).attr("fill", function(d) {
+        if (onOff) return "white"
+        let attr = this.attributes.pixelattr.nodeValue
+        if (d[attr] == undefined)  {// it's a custom pixel
+        // console.log(customLayerData[attr])
+        return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
+    }
+        return d[attr] > 0 ? sets[attr].color : baseColor
+    })
+}
+
+// update the pixel colors in the layer by their corresponding data property
+let updatePixelsInLayer = (layer, color) => {
+    layer.pixelLayer.selectAll('g').selectAll('g').selectAll('.pixel').attr('fill',(d,i) => {
+        return layer.data[i] > 0 ? color : this.baseColor
+    })
+}
+
+// Get the layer at the current x,y location
 let getPixelLayerAtLoc = (location,pixelWidth) => {
     return this.layers.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
 }
+
+// Update the locations of pixel layers in their layer's object
 let updatePixelLayerLoc = (pixelLayer, location) => {
     let obj = this.layers.find((e) => e.label == pixelLayer.label)
     obj.x = location[0]
     obj.y = location[1]
 }
 
-let findd3PixelLayer = (layerID) => {
+// Find pixel layers by their ID
+let findPixelLayerByID = (layerID) => {
     return this.layers.find((obj) => obj.label === layerID)
 }
 
@@ -230,12 +263,14 @@ function plot_it() {
 const setGlobalVars = () => {
     this.offset = 0;
     this.layers = [];
+    this.customLayerData = {}
 }
 
 const JoinType = {
     AND: 0,
     OR: 1
 }
+const JoinTypeString = ["AND", "OR"]
 
 /**
  * 
@@ -243,37 +278,29 @@ const JoinType = {
  * @param {String} bottomLayer Second layer
  * @param {JoinType} joinType type of join (AND/OR)
  */
-function combineLayer(topLayer, bottomLayer, joinType) {
+let combineLayer = (topLayer, bottomLayer, joinType) => {
     // when combining, remove both layers, add new layer
     const a = topLayer.label;
     const b = bottomLayer.label;
     if (joinType !== JoinType.AND && joinType !== JoinType.OR)
         console.error(`Undefined join type.`)
     
-    const newLayer = {
-        x: bottomLayer.x,
-        y: bottomLayer.y,
-        lastJoinType: joinType, // record last join type of B, to display properly
-        label: `(${a}-${joinType}-${b})`, // new label based on two previous labels
-        pixelLayer: null
-    }
+    if (joinType === JoinType.OR)
+        bottomLayer.data = bottomLayer.data.map((e,i) => e+topLayer.data[i])
+    // if AND: if either zero, new val = 0, else add values
+    if (joinType === JoinType.AND)
+        bottomLayer.data = bottomLayer.data.map((e,i) => e*topLayer.data[i])
 
-    /* TODO: FIX
-    elements.forEach(e => {
-        // if OR: add values
-        if (joinType === JoinType.OR)
-            e[b] += e[a]
-        // if AND: if either zero, new val = 0, else add values
-        if (joinType === JoinType.AND)
-            e[b] = (e[b] * e[a] === 0) ? 0 : e[a] + e[b];
-    })
-    */
-
+    bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
+    bottomLayer.label = `(${a} ${JoinTypeString[joinType]} ${b})`, // new label based on two previous labels
+    this.customLayerData[bottomLayer.label] = bottomLayer.data
+    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text").text(`(${a} ${JoinTypeString[joinType]} ${b})`)
+    bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
+    sets[bottomLayer.label] = {color: getRandomColor()}
     // remove old two layers
-    this.layers = layers.filter(e => e.label !== a && e.label !== b)
-
-    // add new layer
-    this.layers.push(newLayer)
+    this.layers = layers.filter(e => e.label !== a);
+    topLayer.pixelLayer.remove();
+    updatePixelsInLayer(bottomLayer, sets[bottomLayer.label].color);
 }
 
 // converts all values to binary values
@@ -289,3 +316,13 @@ function normalizeToBinary() {
 function numberOfRowsCol(totalElements) {
     return Math.ceil(Math.sqrt(totalElements));
 }
+
+//credit to user Anatoliy: https://stackoverflow.com/questions/1484506/random-color-generator 
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
