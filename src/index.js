@@ -188,15 +188,14 @@ const plotPixelLayer = (attr,index) => {
             console.log('source=target pixel layer, abort')
             return
         }
-
-        // TODO: 
-        // make sure layer1 !== layer2
-
-
         console.log("layer 1 and 2:")
         console.log(topLayer)
         console.log(layerTwo)
 
+        // combine layers
+        // TODO: enable choosing AND/OR join types via HTML checkbox/input field
+
+        // combineLayer(topLayer, layerTwo, JoinType.AND)
     })
     );
 }
@@ -239,15 +238,26 @@ const JoinType = {
 
 /**
  * 
- * @param {String} a First attribute
- * @param {String} b Second attribute
+ * @param {String} topLayer First layer
+ * @param {String} bottomLayer Second layer
  * @param {JoinType} joinType type of join (AND/OR)
  */
-function combineLayer(a, b, joinType) {
-    // when combining, basically make B the new layer
-    // A is unchanged...
-    if (!joinType)
+function combineLayer(topLayer, bottomLayer, joinType) {
+    // when combining, remove both layers, add new layer
+    const a = topLayer.label;
+    const b = bottomLayer.label;
+    if (joinType !== JoinType.AND && joinType !== JoinType.OR)
         console.error(`Undefined join type.`)
+    
+    const newLayer = {
+        x: bottomLayer.x,
+        y: bottomLayer.y,
+        lastJoinType: joinType, // record last join type of B, to display properly
+        label: `(${a}-${joinType}-${b})`, // new label based on two previous labels
+        pixelLayer: null
+    }
+
+    /* TODO: FIX
     elements.forEach(e => {
         // if OR: add values
         if (joinType === JoinType.OR)
@@ -256,7 +266,13 @@ function combineLayer(a, b, joinType) {
         if (joinType === JoinType.AND)
             e[b] = (e[b] * e[a] === 0) ? 0 : e[a] + e[b];
     })
-    sets[b].lastJoinType = joinType; // record last join type of B, to display properly
+    */
+
+    // remove old two layers
+    this.layers = layers.filter(e => e.label !== a && e.label !== b)
+
+    // add new layer
+    this.layers.push(newLayer)
 }
 
 // converts all values to binary values
