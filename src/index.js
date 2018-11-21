@@ -131,7 +131,7 @@ const plotPixelLayer = (attr,index) => {
             y = y*(width+textPad+margin)
             return y
         })
-    this.pLAndLoc.push({x: x, y: y, pixelLayer: pixelLayer})
+    this.layers.push({x: x, y: y, pixelLayer: pixelLayer})
 
     const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
@@ -171,7 +171,7 @@ const plotPixelLayer = (attr,index) => {
         let mouseLoc = [d3.mouse(this)[0], d3.mouse(this)[1]]
         let layerTwo = getPixelLayerAtLoc(mouseLoc, width);
         if (!layerTwo) return
-        console.log("layer 1 anad 2")
+        console.log("layer 1 and 2:")
         console.log(layerOne)
         console.log(layerTwo)
     })
@@ -179,10 +179,10 @@ const plotPixelLayer = (attr,index) => {
 }
 
 let getPixelLayerAtLoc = (location,pixelWidth) => {
-    return this.pLAndLoc.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
+    return this.layers.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
 }
 let updatePixelLocation = (pixelLayer, location) => {
-    let obj = this.pLAndLoc.find((obj) => obj.pixelLayer == pixelLayer)
+    let obj = this.layers.find((obj) => obj.pixelLayer == pixelLayer)
     obj.x = location[0]
     obj.y = location[1]
 }
@@ -201,7 +201,7 @@ function plot_it() {
 
 const setGlobalVars = () => {
     this.offset = 0;
-    this.pLAndLoc = [];
+    this.layers = [];
 }
 
 const JoinType = {
