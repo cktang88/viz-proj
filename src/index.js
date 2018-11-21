@@ -184,6 +184,10 @@ const plotPixelLayer = (attr,index) => {
             console.log('layer2 not found.')
             return
         }
+        if (topLayer.label === layerTwo.label) {
+            console.log('source=target pixel layer, abort')
+            return
+        }
 
         // TODO: 
         // make sure layer1 !== layer2
