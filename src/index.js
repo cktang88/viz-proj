@@ -192,7 +192,7 @@ let getPixelLayerAtLoc = (location,pixelWidth) => {
 }
 let updatePixelLocation = (pixelLayer, location) => {
     console.log(pixelLayer)
-    let obj = this.layers.find((e) => e.pixelLayer == pixelLayer)
+    let obj = this.layers.find((e) => e.label == pixelLayer.label)
     obj.x = location[0]
     obj.y = location[1]
 }
