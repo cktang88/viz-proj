@@ -153,14 +153,15 @@ const plotPixelLayer = (attr,index) => {
         .attr("height", yScale(1))
         .attr("fill", d => d[attr] > 0 ? sets[attr].color : baseColor)
         .attr("class", `pixel`)
-        .attr("style", d => d.hoverOver ? "outline: thin solid red;" : "outline: none;")
 
         // mouse hover pixel anim
-        .on('mouseover', d => {
-            d.hoverOver = true
-            //console.log(d)
+        .on('mouseover', function(d) {
+            console.log(d, this)
+            d3.select(this).attr("stroke", "white").style("stroke-width", 2)
         })
-        .on('mouseout', d => d.hoverOver = false)
+        .on('mouseout', function() {
+            d3.select(this).attr("stroke", "none")
+        })
 
     pixelLayer.call(d3.drag()
     .on("start", function() {
