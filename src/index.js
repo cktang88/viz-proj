@@ -173,11 +173,12 @@ const plotPixelLayer = (attr,index) => {
         d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
     })
     .on("end", function() {
-        let mouseLoc = [d3.mouse(this)[0], d3.mouse(this)[1]]
-        let layerTwo = getPixelLayerAtLoc(mouseLoc, width);
-        
+        const mouseLoc = d3.mouse(this)
+        const layerTwo = getPixelLayerAtLoc(mouseLoc, width);
+
         // update location AFTER getting second layer so that second layer is different
-        updatePixelLocation(topLayer, mouseLoc)
+        const newloc = [d3.mouse(this)[0] - width/2, d3.mouse(this)[1] - height/2]
+        updatePixelLayerLoc(topLayer, newloc)
 
         if (!layerTwo) {
             console.log('layer2 not found.')
@@ -199,7 +200,7 @@ const plotPixelLayer = (attr,index) => {
 let getPixelLayerAtLoc = (location,pixelWidth) => {
     return this.layers.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
 }
-let updatePixelLocation = (pixelLayer, location) => {
+let updatePixelLayerLoc = (pixelLayer, location) => {
     let obj = this.layers.find((e) => e.label == pixelLayer.label)
     obj.x = location[0]
     obj.y = location[1]
