@@ -164,12 +164,9 @@ const plotPixelLayer = (attr,index) => {
 
         // mouse hover pixel anim
         .on('mouseover', function(d,i) {
-            // console.log(d, this)
-            // d3.select(this).attr("stroke", "white").style("stroke-width", 2)
             highlightPixel(i, true)
         })
         .on('mouseout', function(d,i) {
-            // d3.select(this).attr("stroke", "none")
             highlightPixel(i, false)
         })
 
@@ -222,15 +219,17 @@ const plotPixelLayer = (attr,index) => {
     );
 }
 
-let highlightPixel = (index,onOff) => {
-    d3.select('.container').selectAll(`.pixel.i${index}`).attr("fill", function(d) {
-        if (onOff) return "white"
+let highlightPixel = (index, highlight) => {
+    d3.select('.container').selectAll(`.pixel.i${index}`).attr("stroke", function(d) {
+        if (highlight) return "white"
         let attr = this.attributes.pixelattr.nodeValue
-        if (d[attr] == undefined)  {// it's a custom pixel
-        // console.log(customLayerData[attr])
-        return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
-    }
-        return d[attr] > 0 ? sets[attr].color : baseColor
+        // it's a custom pixel
+        if (d[attr] == undefined)  {
+            // console.log(customLayerData[attr])
+            // return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
+        }
+        // return d[attr] > 0 ? sets[attr].color : baseColor
+        return 'none'
     })
 }
 
