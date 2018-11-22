@@ -9,12 +9,13 @@ NOTE: the data processing methods in loadData() are SPECIFIC to data derived fro
 var header = {};
 var elements = [];
 var sets = {}; // dict of {attr: {attribute data obj}}
-const heightOffset = 102; // distance between top of screen and svg div
+const heightOffset = 132; // distance between top of screen and svg div
 // execute main method
 try {
     loadData();
 } catch (e) {
     console.log(e);
+    alert('Error loading data due to CORS security issue, please use Firefox!')
 }
 
 // main method
@@ -163,12 +164,9 @@ const plotPixelLayer = (attr,index) => {
 
         // mouse hover pixel anim
         .on('mouseover', function(d,i) {
-            // console.log(d, this)
-            // d3.select(this).attr("stroke", "white").style("stroke-width", 2)
             highlightPixel(i, true)
         })
         .on('mouseout', function(d,i) {
-            // d3.select(this).attr("stroke", "none")
             highlightPixel(i, false)
         })
 
@@ -182,9 +180,11 @@ const plotPixelLayer = (attr,index) => {
     .on("drag", function() {
         let mouse = window.event ? mousePos() : d3.mouse(this) // accounts for Firefox and Chrome
         // d3.select(this).attr("transform",`translate(${d3.mouse(this)[0]},${d3.mouse(this)[1]})`)
-        d3.select(this).attr("x", mouse[0]-(width/2)).attr("y", mouse[1]-(width/2)); // follow mouse
+        d3.select(this).attr("x", mouse[0]-(width/2)).attr("y", mouse[1]-(width/2)).style('opacity', .8); // follow mouse
     })
     .on("end", function() {
+        d3.select(this)
+        .style('opacity', 1)
         const mouseLoc = window.event ? mousePos() : d3.mouse(this)
         const layerTwo = getPixelLayerAtLoc(mouseLoc, width);
 
@@ -203,7 +203,10 @@ const plotPixelLayer = (attr,index) => {
         console.log("layer 1 and 2:")
         console.log(topLayer)
         console.log(layerTwo)
-        combineLayer(topLayer, layerTwo, JoinType.AND)
+
+        let jointype = document.getElementById("join-select").value
+
+        combineLayer(topLayer, layerTwo, jointype == 'and' ? JoinType.AND : JoinType.OR)
 
         // combine layers
         // TODO: enable choosing AND/OR join types via HTML checkbox/input field
@@ -213,15 +216,17 @@ const plotPixelLayer = (attr,index) => {
     );
 }
 
-let highlightPixel = (index,onOff) => {
-    d3.select('.container').selectAll(`.pixel.i${index}`).attr("fill", function(d) {
-        if (onOff) return "white"
+let highlightPixel = (index, highlight) => {
+    d3.select('.container').selectAll(`.pixel.i${index}`).attr("stroke", function(d) {
+        if (highlight) return "white"
         let attr = this.attributes.pixelattr.nodeValue
-        if (d[attr] == undefined)  {// it's a custom pixel
-        // console.log(customLayerData[attr])
-        return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
-    }
-        return d[attr] > 0 ? sets[attr].color : baseColor
+        // it's a custom pixel
+        if (d[attr] == undefined)  {
+            // console.log(customLayerData[attr])
+            // return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
+        }
+        // return d[attr] > 0 ? sets[attr].color : baseColor
+        return 'none'
     })
 }
 
@@ -287,16 +292,22 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     if (joinType !== JoinType.AND && joinType !== JoinType.OR)
         console.error(`Undefined join type.`)
     
-    if (joinType === JoinType.OR)
-        bottomLayer.data = bottomLayer.data.map((e,i) => e+topLayer.data[i])
+    let combineFunc;
+    if (joinType === JoinType.OR) {
+        combineFunc = (e,i) => e+topLayer.data[i]
+    }
     // if AND: if either zero, new val = 0, else add values
-    if (joinType === JoinType.AND)
-        bottomLayer.data = bottomLayer.data.map((e,i) => e*topLayer.data[i])
+    if (joinType === JoinType.AND) {
+        combineFunc = (e,i) => e*topLayer.data[i]
+    }
+    console.log('Layers joined with: ', joinType)
+    bottomLayer.data = bottomLayer.data.map(combineFunc)
+
 
     bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
     bottomLayer.label = `(${a} ${JoinTypeString[joinType]} ${b})`, // new label based on two previous labels
     this.customLayerData[bottomLayer.label] = bottomLayer.data
-    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text").text(`(${a} ${JoinTypeString[joinType]} ${b})`)
+    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text").text(bottomLayer.label)
     bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
     sets[bottomLayer.label] = {color: getRandomColor()}
     // remove old two layers

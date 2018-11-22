@@ -5,7 +5,7 @@
 		<title>Data Viz Project</title>
 		<script type='text/javascript' src='https://d3js.org/d3.v5.min.js'></script>
 		<!--<link rel="stylesheet" type="text/css" href="basictheme.css">-->
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato" />
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Lato" />
 		<style>
 		* {
 			font-family: Lato;
@@ -18,7 +18,7 @@
 			height: 100vh;
 		}
 		.header {
-			height: 100px;
+			height: 130px;
 		}
 		</style>
 	</head>
@@ -30,7 +30,21 @@
 			<p style='text-align: center'>
 				Kwuang Tang and Kevin Jin, CS 3891 Intro to Visualization
 			</p>
+		<br>
+		<p>
+			Mouse over pixel to highlight, and drag and drop pixel layers!
+		</p>
+		<div>
+			<label>
+				Combining type on drag-and-drop:
+			</label>
+			<select id='join-select'>
+				<option value="and">AND</option>
+				<option value="or">OR</option>
+			  </select>
 		</div>
+		<br>
+	</div>
 		<svg class="container"></svg>
 	<script type='text/javascript' src='index.js'></script>
   	</body>
