@@ -181,9 +181,16 @@ const plotPixelLayer = (attr,index) => {
         console.log('toplayer: ', topLayer)
     })
     .on("drag", function() {
-        d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
+         // follow mouse
+        d3.select(this)
+            .attr("x", d3.mouse(this)[0]-(width/2))
+            .attr("y", d3.mouse(this)[1]-(width/2))
+            .style('opacity', .8)
     })
     .on("end", function() {
+        d3.select(this)
+            .style('opacity', 1)
+
         const mouseLoc = d3.mouse(this)
         const layerTwo = getPixelLayerAtLoc(mouseLoc, width);
 
