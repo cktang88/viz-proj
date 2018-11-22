@@ -146,12 +146,13 @@ const plotPixelLayer = (attr,index) => {
     const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
 
     pixelLayer.append('text')
+        .attr('id', `${attr}-text`)
         .attr('x', width / 2)
         .attr('y', 15)
         .attr('text-anchor', 'middle')
         .attr('font-size', '15px')
         //.attr('font-weight', "bold")
-        .text(`${attr}`)
+        .text(attr)
 
     main.append("g").selectAll(`.pixel`).data(elements).enter().append("rect")
         .attr("y", (d, i) => yScale(Math.floor(i / rowcolNum)))
@@ -307,10 +308,17 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
     bottomLayer.label = `(${a} ${JoinTypeString[joinType]} ${b})`, // new label based on two previous labels
     this.customLayerData[bottomLayer.label] = bottomLayer.data
-    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text").text(bottomLayer.label)
+    
     bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
     sets[bottomLayer.label] = {color: getRandomColor()}
-    // remove old two layers
+
+    // set layer text
+    bottomLayer.pixelLayer.attr("id", bottomLayer.label)
+        .selectAll("text")
+        .text(bottomLayer.label)
+        .attr('font-size', `12px`)
+
+    // remove top layer
     this.layers = layers.filter(e => e.label !== a);
     topLayer.pixelLayer.remove();
     updatePixelsInLayer(bottomLayer, sets[bottomLayer.label].color);
