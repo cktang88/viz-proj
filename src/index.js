@@ -15,6 +15,7 @@ try {
     loadData();
 } catch (e) {
     console.log(e);
+    alert('Error loading data due to CORS security issue, please use Firefox!')
 }
 
 // main method
@@ -201,7 +202,10 @@ const plotPixelLayer = (attr,index) => {
         console.log("layer 1 and 2:")
         console.log(topLayer)
         console.log(layerTwo)
-        combineLayer(topLayer, layerTwo, JoinType.AND)
+
+        let jointype = document.getElementById("join-select").value
+
+        combineLayer(topLayer, layerTwo, jointype == 'and' ? JoinType.AND : JoinType.OR)
 
         // combine layers
         // TODO: enable choosing AND/OR join types via HTML checkbox/input field
@@ -285,16 +289,22 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     if (joinType !== JoinType.AND && joinType !== JoinType.OR)
         console.error(`Undefined join type.`)
     
-    if (joinType === JoinType.OR)
-        bottomLayer.data = bottomLayer.data.map((e,i) => e+topLayer.data[i])
+    let combineFunc;
+    if (joinType === JoinType.OR) {
+        combineFunc = (e,i) => e+topLayer.data[i]
+    }
     // if AND: if either zero, new val = 0, else add values
-    if (joinType === JoinType.AND)
-        bottomLayer.data = bottomLayer.data.map((e,i) => e*topLayer.data[i])
+    if (joinType === JoinType.AND) {
+        combineFunc = (e,i) => e*topLayer.data[i]
+    }
+    console.log('Layers joined with: ', joinType)
+    bottomLayer.data = bottomLayer.data.map(combineFunc)
+
 
     bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
     bottomLayer.label = `(${a} ${JoinTypeString[joinType]} ${b})`, // new label based on two previous labels
     this.customLayerData[bottomLayer.label] = bottomLayer.data
-    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text").text(`(${a} ${JoinTypeString[joinType]} ${b})`)
+    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text").text(bottomLayer.label)
     bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
     sets[bottomLayer.label] = {color: getRandomColor()}
     // remove old two layers
