@@ -298,7 +298,7 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     }
     // if AND: if either zero, new val = 0, else add values
     if (joinType === JoinType.AND) {
-        combineFunc = (e,i) => e*topLayer.data[i]
+        combineFunc = (e,i) => e*topLayer.data[i] > 0 ? e+topLayer.data[i] : 0
     }
     console.log('Layers joined with: ', joinType)
     bottomLayer.data = bottomLayer.data.map(combineFunc)
@@ -340,7 +340,7 @@ function getRandomColor() {
     return color;
   }
 
-  function mousePos(e) {
+  function mousePos(e) { //mouse position code inspired by https://plainjs.com/javascript/events/getting-the-current-mouse-position-16/
     e = e || window.event;
 
     var pageX = e.pageX;
