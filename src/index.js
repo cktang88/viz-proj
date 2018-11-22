@@ -9,7 +9,7 @@ NOTE: the data processing methods in loadData() are SPECIFIC to data derived fro
 var header = {};
 var elements = [];
 var sets = {}; // dict of {attr: {attribute data obj}}
-
+const heightOffset = 102; // distance between top of screen and svg div
 // execute main method
 try {
     loadData();
@@ -180,14 +180,16 @@ const plotPixelLayer = (attr,index) => {
         console.log('toplayer: ', topLayer)
     })
     .on("drag", function() {
-        d3.select(this).attr("x", d3.mouse(this)[0]-(width/2)).attr("y", d3.mouse(this)[1]-(width/2)); // follow mouse
+        let mouse = window.event ? mousePos() : d3.mouse(this) // accounts for Firefox and Chrome
+        // d3.select(this).attr("transform",`translate(${d3.mouse(this)[0]},${d3.mouse(this)[1]})`)
+        d3.select(this).attr("x", mouse[0]-(width/2)).attr("y", mouse[1]-(width/2)); // follow mouse
     })
     .on("end", function() {
-        const mouseLoc = d3.mouse(this)
+        const mouseLoc = window.event ? mousePos() : d3.mouse(this)
         const layerTwo = getPixelLayerAtLoc(mouseLoc, width);
 
         // update location AFTER getting second layer so that second layer is different
-        const newloc = [d3.mouse(this)[0] - width/2, d3.mouse(this)[1] - height/2]
+        const newloc = [mouseLoc[0] - width/2, mouseLoc[1] - height/2]
         updatePixelLayerLoc(topLayer, newloc)
 
         if (!layerTwo) {
@@ -326,3 +328,18 @@ function getRandomColor() {
     }
     return color;
   }
+
+  function mousePos(e) {
+    e = e || window.event;
+
+    var pageX = e.pageX;
+    var pageY = e.pageY;
+
+    // IE 8
+    if (pageX === undefined) {
+        pageX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+        pageY = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+
+    return [pageX,pageY-heightOffset]
+}
