@@ -313,6 +313,7 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     sets[bottomLayer.label] = {color: getRandomColor()}
 
     // https://stackoverflow.com/questions/388996/regex-for-javascript-to-allow-only-alphanumeric keep only alphanumeric characters
+    // https://github.com/vijithassar/d3-textwrap modified the node package to support client side javascript and for this project's purposes
     let wrap = textwrap(`${bottomLayer.label.replace(/[^a-z0-9]/gi,'')}-text`).bounds({height: 480, width: 100});
 
     // set layer text
