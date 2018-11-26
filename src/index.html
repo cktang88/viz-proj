@@ -5,6 +5,7 @@
 		<title>Data Viz Project</title>
 		<script type='text/javascript' src='https://d3js.org/d3.v5.min.js'></script>
 		<!--<link rel="stylesheet" type="text/css" href="basictheme.css">-->
+		<script type='text/javascript' src='d3-textwrap-master/src/textwrap.js'></script>
 		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Lato" />
 		<style>
 		* {
@@ -15,10 +16,17 @@
 		.container {
 			width: 98%;
 			margin: 2px;
-			height: 100vh;
+			height: 1000px;
 		}
 		.header {
 			height: 130px;
+		}
+		svg,foreignObject {
+			overflow: visible;
+		}
+		#bugfix {
+			position: absolute;
+			bottom: 0px;
 		}
 		</style>
 	</head>
@@ -45,7 +53,7 @@
 		</div>
 		<br>
 	</div>
-		<svg class="container"></svg>
+	<svg class="container"></svg>
 	<script type='text/javascript' src='index.js'></script>
   	</body>
 </html>

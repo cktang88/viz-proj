@@ -143,15 +143,15 @@ const plotPixelLayer = (attr,index) => {
         data: elements.map((e) => e[attr] > 0 ? 1 : 0)
     })
 
-    const main = pixelLayer.append('g').attr('transform', 'translate(0,' + textPad + ')')
+    const main = pixelLayer.append('g')
 
     pixelLayer.append('text')
         .attr('id', `${attr}-text`)
         .attr('x', width / 2)
-        .attr('y', 15)
+        .attr('y', 115)
         .attr('text-anchor', 'middle')
         .attr('font-size', '15px')
-        //.attr('font-weight', "bold")
+        .attr('font-weight', "bold")
         .text(attr)
 
     main.append("g").selectAll(`.pixel`).data(elements).enter().append("rect")
@@ -266,6 +266,7 @@ function plot_it() {
         i+=1
     })
     console.log(this.layers)
+    console.log("done")
 }
 
 const setGlobalVars = () => {
@@ -304,7 +305,6 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     console.log('Layers joined with: ', joinType)
     bottomLayer.data = bottomLayer.data.map(combineFunc)
 
-
     bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
     bottomLayer.label = `(${a} ${JoinTypeString[joinType]} ${b})`, // new label based on two previous labels
     this.customLayerData[bottomLayer.label] = bottomLayer.data
@@ -312,10 +312,20 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
     sets[bottomLayer.label] = {color: getRandomColor()}
 
+    // https://stackoverflow.com/questions/388996/regex-for-javascript-to-allow-only-alphanumeric keep only alphanumeric characters
+    let wrap = textwrap(`${bottomLayer.label.replace(/[^a-z0-9]/gi,'')}-text`).bounds({height: 480, width: 100});
+
     // set layer text
+    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text,foreignObject").remove();
     bottomLayer.pixelLayer.attr("id", bottomLayer.label)
-        .selectAll("text")
+        .append("text")
         .text(bottomLayer.label)
+        .call(wrap)
+    
+    // d3.selectAll('text').call(wrap);
+    bottomLayer.pixelLayer.selectAll("foreignObject")
+        .attr('font-weight', "bold")
+        .attr("y",100)
         .attr('font-size', `12px`)
 
     // remove top layer
