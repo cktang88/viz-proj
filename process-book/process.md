@@ -8,19 +8,33 @@ Overview and Motivation
 ---
 > Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal.
 
+Visualizing data with high cardinality in sets and elements per set using traditional visualization techniques can be difficult, since Venn Diagrams and Euler Diagrams and other visualizations quickly become overly crowded and complicated.
 
+The OnSet data visualization method can handle a large number of sets and also large numbers of elements in each set in the dataset and the resulting visualization would still be comprehensible. It accomplishes this by representing each set independently through a PixelLayer, which can in turn hold a large quantity of elements. Usually a user would only want to compare several sets at once to find relationships, which can either be an OR operation or AND operation on multiple PixelLayers.
+
+Our objective is to effectively implement the most significant aspects of the the OnSet visualization technique to accomplish the main functionality. The OnSet visualization technique we implement does not have to be exactly as in the research paper due to our time constraints of 4 weeks for this project, but the visualization should scale well for thousands of data points and many categories/sets, to see the relationship between categories/sets.
     
 Related Work
 ---
 >Anything that inspired you, such as a paper, a web site, visualizations we discussed in class, etc.
 
-The original whitepaper at
+The original whitepaper at https://www.cc.gatech.edu/~stasko/papers/infovis14-onset.pdf had a lot of functionality that they implemented and reported, so that was our main inspiration.
     
 Questions
 ---
 > What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
 
-asdf
+- How to represent data so that pixel layers and the interactions would be easy to implement and extend?
+    - our representation changed multiple times throughout the entire project.
+
+- What aspects of the data needs to be most apparent in the visualization and easy to discern?
+    - the individual pixel layers representing each attribute, and the pixel corresponding to the same animal being highlighted in all pixel layers on mouse hover.
+
+- What interactions would be most useful for the users?
+    - the drag-and-drop is very crucial because that's the main way of differentiating large amounts of binary data in two different pixel layers.
+
+- How would we represent data is an honest way?
+    - use HSL coloring, and also AND/OR joins should work as expected. In order to further show the effect of the OR join, we implemented the different luminosities keeping the same hue, so that pixels that show more similarity between the combined pixel layers would be darker for easy viewing.
 
 Data
 ---

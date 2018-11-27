@@ -9,6 +9,9 @@ Local: Use an http server to serve the `/src` dir. Then browse to the server hos
 
 Deployed: Alternatively, just go to https://d3viz.netlify.com/ (if it doesn't load the first time and there are no console errors, try refreshing page)
 
+## Process Book
+See [here](./process-book/process.md).
+
 ## Features (Obvious and Non-Obvious)
 
 The features in our application include the following:
