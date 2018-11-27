@@ -1,9 +1,8 @@
-# OnSet Data Visualization Implementation - Kevin Jin and Kwuang Tang, CS 3891 Vanderbilt University
-
+# OnSet Data Visualization Implementation
+**Kevin Jin and Kwuang Tang, CS 3891 Vanderbilt University**
 Technique project - from whitepaper https://www.cc.gatech.edu/~stasko/papers/infovis14-onset.pdf
 
 ## How to Run:
----
 Local: Use an http server to serve the `/src` dir. Then browse to the server host and port as usual (perhaps something like `localhost:8000`) which will serve `index.html`. NOTE: opening up `index.html` directly in most browsers won't work because of CORS errors (opening in Firefox usually works though)
 
 
@@ -25,15 +24,15 @@ The features in our application include the following:
 All code for these features are written by us with the exception of code listed below in the External Code section
 
 ## External Code
-
+### Libraries
 - The text wrapping implementation for the PixelLayer labels are modified from the [d3-textwrap NPM module](https://www.npmjs.com/package/d3-textwrap) to work for our 'backend-less' d3 visualization. The library was also updated by us to support d3 v5 (originally supported d3 v4). Additional modifications were made by us to the library to suit our project better. The library is contained in `src/d3-textwrap-master`
-The library is used in the line of our program:
+The library is used in this line of our program:
 ```js
 // https://stackoverflow.com/questions/388996/regex-for-javascript-to-allow-only-alphanumeric keep only alphanumeric characters
 // https://github.com/vijithassar/d3-textwrap modified the node package to support client side javascript and for this project's purposes
 let wrap = textwrap(`${bottomLayer.label.replace(/[^a-z0-9]/gi,'')}-text`).bounds({height: 480, width: 100});
 ```
-
+### Code Snippets
 There were several pieces of code that we wrote that were inspired by code snippets from stackoverflow and other websites
 
 - The regex on this line of our code to remove all non-alphanumeric characters was from [stackoverflow](https://stackoverflow.com/questions/388996/regex-for-javascript-to-allow-only-alphanumeric)
@@ -60,6 +59,7 @@ function mousePos(e) { //mouse position code inspired by https://plainjs.com/jav
     return [pageX,pageY-heightOffset]
 }
 ```
+## Other Credits
 
 The .txt to .csv conversion of our example dataset was done by [browserling](https://www.browserling.com/tools/text-to-csv)
 
