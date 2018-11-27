@@ -48,6 +48,10 @@ try {
     alert('Error loading data due to CORS security issue, please use Firefox!')
 }
 
+function inputSubmitted() {
+    console.log('submitted input.')
+}
+
 // main method
 function loadData() {
     // load headers
@@ -142,12 +146,14 @@ const plotPixelLayer = (attr,index) => {
         .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
+            let DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
+            console.log(DISPLAY_WIDTH)
             let currOut = index*(width+margin)+2*width
-            if (Math.floor(currOut/screen.width)!=Math.floor(((index-1)*(width+margin)+2*width)/screen.width)) {
-                this.offset = -1*((currOut%screen.width)-2*width)
+            if (Math.floor(currOut/DISPLAY_WIDTH)!=Math.floor(((index-1)*(width+margin)+2*width)/DISPLAY_WIDTH)) {
+                this.offset = -1*((currOut%DISPLAY_WIDTH)-2*width)
             }
-            y = Math.floor(currOut/screen.width)
-            x = (currOut%screen.width)-2*width+this.offset
+            y = Math.floor(currOut/DISPLAY_WIDTH)
+            x = (currOut%DISPLAY_WIDTH)-2*width+this.offset
             return x
         })
         .attr("y", ()=> {

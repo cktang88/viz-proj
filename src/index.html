@@ -28,6 +28,20 @@
 			position: absolute;
 			bottom: 0px;
 		}
+		#parentpanel {
+			display: flex;
+			padding: 20px;
+		}
+		#leftpanel {
+			width: 80%;
+		}
+		#rightpanel {
+			width: 20%;
+			justify-content: center;
+		}
+		textarea {
+			width: 80%;
+		}
 		</style>
 	</head>
 	<body>
@@ -39,21 +53,27 @@
 				Kwuang Tang and Kevin Jin, CS 3891 Intro to Visualization
 			</p>
 		<br>
-		<p>
-			Mouse over pixel to highlight, and drag and drop pixel layers!
-		</p>
-		<div>
-			<label>
-				Combining type on drag-and-drop:
-			</label>
-			<select id='join-select'>
-				<option value="and">AND</option>
-				<option value="or">OR</option>
-			  </select>
-		</div>
-		<br>
+		<div id='parentpanel'>
+			<div id='leftpanel'>
+				<p>
+					Mouse over pixel to highlight, and drag and drop pixel layers!
+				</p>
+				<div>
+					<label>
+						Combining type on drag-and-drop:
+					</label>
+					<select id='join-select'>
+						<option value="and">AND</option>
+						<option value="or">OR</option>
+					</select>
+				</div>
+				<svg class="container"></svg>
+			</div>
+			<div id='rightpanel'>
+				<textarea name="datainput" cols="40" rows="5"></textarea>
+				<button id='inputbtn' onclick='inputSubmitted()'>Add new PixelLayer data</button>
+			</div>
 	</div>
-	<svg class="container"></svg>
-	<script type='text/javascript' src='index.js'></script>
+		<script type='text/javascript' src='index.js'></script>
   	</body>
 </html>
