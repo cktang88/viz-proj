@@ -1,6 +1,28 @@
-## process-book
+# Process Book
 
-NOTE: this is a WIP, and will most likely be heavily modified as the final deadline approaches.
+> NOTE: this is a WIP, and will most likely be heavily modified as the final deadline approaches.
+
+
+
+Overview and Motivation
+---
+Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal.
+    
+Related Work
+---
+Anything that inspired you, such as a paper, a web site, visualizations we discussed in class, etc.
+    
+Questions
+---
+What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+
+Data
+---
+Source, scraping method, cleanup, etc.
+    
+Implementation
+---
+Describe the intent and functionality of the visualizations you implemented. Provide clear and well-referenced images showing the key design and interaction elements.
 
 
 
