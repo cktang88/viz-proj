@@ -22,7 +22,7 @@ The features in our application include the following:
 - Colors are unique for every PixelLayer.
 - Chrome and Firefox support for our application
 
-All code for these features are written by us with the exception of code listed below in the External Code section
+All code for these features are written by us with the exception of code listed below in the External Code section.
 
 ## External Code
 ### Libraries

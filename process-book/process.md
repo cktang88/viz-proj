@@ -6,25 +6,70 @@
 
 Overview and Motivation
 ---
-Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal.
+> Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal.
+
+
     
 Related Work
 ---
-Anything that inspired you, such as a paper, a web site, visualizations we discussed in class, etc.
+>Anything that inspired you, such as a paper, a web site, visualizations we discussed in class, etc.
+
+The original whitepaper at
     
 Questions
 ---
-What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+> What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+
+asdf
 
 Data
 ---
-Source, scraping method, cleanup, etc.
+> Source, scraping method, cleanup, etc.
+> 
+Our example dataset of animal attributes came from https://dtai.cs.kuleuven.be/CP4IM/datasets/
+
+This was a `.txt` file [here](/src/data/zoo-raw.txt). The steps to get it into usable data were as follows:
+
+1. Due to the format of the text file, the first step was to split it into two sections, a section with the key corresponds the numerical data to labels/attributes (called the [header]((/src/data/zoo-header.txt))), and the actual data itself (called the [body](/src/data/zoo-body.txt)).
+2. Convert both those text files to `.csv` format via [browserling](https://www.browserling.com/tools/text-to-csv). Result is:
+   [header csv](/src/data/zoo-header.csv) and [body csv](src/data/zoo-body.csv).
+   
+3. Convert the tabular data to 
+
     
 Implementation
 ---
-Describe the intent and functionality of the visualizations you implemented. Provide clear and well-referenced images showing the key design and interaction elements.
+> Describe the intent and functionality of the visualizations you implemented. Provide clear and well-referenced images showing the key design and interaction elements.
 
 
+- PixelLayers displayed as 2D matrices from input data. Colors are unique(random HSL color) for every PixelLayer.
+  
+  ![Pixel Layer](./images/pixellayer.png)
+
+
+- Highlighting a pixel in one layer highlights the same one in other PixelLayers as well
+    
+    ![Hover corresponding pixels](./images/hover.png)
+
+- Drag and dropping PixelLayers onto each other calls AND/OR operational joins on the dataset of each PixelLayer
+
+    
+
+- Ability to easily switch between AND/OR joins via a dropdown control.
+    ![And/Or select](./images/and-or.png)
+
+- OR joins have pixel luminosity determined by pixel frequency in the joined data.
+  
+    ![OR join](./images/or.png)
+
+
+    In addition, as seen above, each PixelLayer has a **label that is updated** as operational joins are performed on it and also **text wrapping** is supported
+
+
+- Ability to add new PixelLayers to the visualization by importing new attribute data into the existing visualization
+
+
+- In addition, we also took special care to make sure we supported both Chrome and Firefox, which was challenging because the two browsers had slightly different rendering behavior and window/event APIs differed slightly.
 
 
 Timeline
