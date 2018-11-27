@@ -1,5 +1,5 @@
 # OnSet Data Visualization Implementation
-**Kevin Jin and Kwuang Tang, CS 3891 Vanderbilt University**
+**Kevin Jin and Kwuang Tang, CS3891, Introduction to Visualization, Vanderbilt University**
 
 Technique project - from whitepaper https://www.cc.gatech.edu/~stasko/papers/infovis14-onset.pdf
 
