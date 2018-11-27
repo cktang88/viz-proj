@@ -18,7 +18,7 @@ Related Work
 ---
 >Anything that inspired you, such as a paper, a web site, visualizations we discussed in class, etc.
 
-The original whitepaper at https://www.cc.gatech.edu/~stasko/papers/infovis14-onset.pdf had a lot of functionality that they implemented and reported, so that was our main inspiration.
+The original whitepaper at https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6876026&tag=1 had a lot of functionality that they implemented and reported, so that was our main inspiration.
     
 Questions
 ---
