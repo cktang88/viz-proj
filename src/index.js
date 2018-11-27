@@ -6,10 +6,40 @@ note: .txt to .csv conversion done via https://www.browserling.com/tools/text-to
 NOTE: the data processing methods in loadData() are SPECIFIC to data derived from https://dtai.cs.kuleuven.be/CP4IM/datasets/
 */
 
+/**
+ * USER DEFINED PARAMETERS
+ * width - width of a single PixelLayer
+ * height - height of a single PixelLayer
+ * baseColor - color to represent False pixel values
+ * saturation - base saturation of each PixelLayer's True pixel value color
+ * lum - base luminacity
+ * lumDiff - difference in luminacity between pixels of differing frequency 1 in OR join operation
+ */
+const width = 100,
+    height = width,
+    margin = 2.5,
+    textPad = 20,
+    saturation = 94,
+    lum = 70,
+    lumDiff = 20
+this.baseColor = "#3a3a3a"; // color of each false pixel
+
+
 var header = {};
 var elements = [];
 var sets = {}; // dict of {attr: {attribute data obj}}
 const heightOffset = 132; // distance between top of screen and svg div
+this.colors = new Set();
+
+let getNewColor = () => { // HSL, saturation is already defined as a user parameter
+    let hue = Math.round(Math.random()*360)
+    while(this.colors.has(hue)) hue = Math.round(Math.random())*360 // no duplicate colors
+    //TODO: get rid of pixelLayer means we should remove colors, or we can also assume # pixelLayers < 360
+    this.colors.add(hue);
+    return `hsl(${hue},${saturation}%,${lum}%)`
+}
+
+
 // execute main method
 try {
     loadData();
@@ -84,10 +114,9 @@ function loadData() {
 }
 
 function assignColors() {
-    const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
     // console.log(colorScale)
     Object.keys(sets).forEach((attr, i) => {
-        sets[attr].color = colorScale(i)
+        sets[attr].color = getNewColor();
         // console.log(sets[attr])
     })
     // console.log(sets)
@@ -99,13 +128,6 @@ const plotPixelLayer = (attr,index) => {
     // number of rows and columns
     const rowcolNum = numberOfRowsCol(elements.length);
     // console.log(elements.length, rowcolNum);
-
-    // user defined parameters
-    const width = 100,
-        height = width,
-        margin = 2.5,
-        textPad = 20
-    this.baseColor = "#3a3a3a"; // color of each false pixel
 
     const layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
         xScale = layerScale([0, width]), // pixel width and X position
@@ -231,9 +253,15 @@ let highlightPixel = (index, highlight) => {
     })
 }
 
+const JoinType = {
+    AND: 0,
+    OR: 1
+}
+
 // update the pixel colors in the layer by their corresponding data property
 let updatePixelsInLayer = (layer, color) => {
     layer.pixelLayer.selectAll('g').selectAll('g').selectAll('.pixel').attr('fill',(d,i) => {
+        if (layer.lastJoinType == JoinType.OR) color = color.split(",").slice(0,2).concat([`${Math.max(lum-lumDiff*(layer.data[i]-1),20)}%)`]).join()
         return layer.data[i] > 0 ? color : this.baseColor
     })
 }
@@ -261,6 +289,9 @@ function plot_it() {
     // plot a pixelLayer for each animal attribute
     let i = 0
     setGlobalVars();
+    //hack to support firefox
+    d3.select('.container').append('svg').attr("x",0).attr("y",1000).append("text").text("CS3891 Vanderbilt University")
+
     Object.keys(elements[0]).forEach((key) => {
         plotPixelLayer(key,i);
         i+=1
@@ -275,10 +306,6 @@ const setGlobalVars = () => {
     this.customLayerData = {}
 }
 
-const JoinType = {
-    AND: 0,
-    OR: 1
-}
 const JoinTypeString = ["AND", "OR"]
 
 /**
@@ -310,7 +337,7 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     this.customLayerData[bottomLayer.label] = bottomLayer.data
     
     bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
-    sets[bottomLayer.label] = {color: getRandomColor()}
+    sets[bottomLayer.label] = {color: sets[b].color}
 
     // https://stackoverflow.com/questions/388996/regex-for-javascript-to-allow-only-alphanumeric keep only alphanumeric characters
     // https://github.com/vijithassar/d3-textwrap modified the node package to support client side javascript and for this project's purposes
@@ -349,17 +376,7 @@ function numberOfRowsCol(totalElements) {
     return Math.ceil(Math.sqrt(totalElements));
 }
 
-//credit to user Anatoliy: https://stackoverflow.com/questions/1484506/random-color-generator 
-function getRandomColor() {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
-
-  function mousePos(e) { //mouse position code inspired by https://plainjs.com/javascript/events/getting-the-current-mouse-position-16/
+function mousePos(e) { //mouse position code inspired by https://plainjs.com/javascript/events/getting-the-current-mouse-position-16/
     e = e || window.event;
 
     var pageX = e.pageX;
