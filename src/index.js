@@ -79,22 +79,19 @@ function loadData() {
 function addHeaderData(header_data) {
     console.log(header_data);
     header_data.forEach(e => {
-        console.log('header:', e)
-        // complicated method to add attributes to `headers` hashmap
-        const keys = Object.keys(e);
-        // console.log(keys);
-        const obj = {
-            attribute: e[keys[1]],
-            value: e[keys[2]]
+        // console.log('header:', e)
+        // add attributes to `headers` hashmap
+        const [num, attr, val] = Object.keys(e);
+        header[e[num]] = {
+            attribute: e[attr],
+            value: e[val]
         };
-        // console.log(obj)
-        header[e[keys[0]]] = obj;
         // console.log(header)
     });
 
     // create sets
     Object.keys(header).forEach(e => {
-        let attr = header[e].attribute;
+        const attr = header[e].attribute;
         if (attr in sets) // don't recompute repeated attrs
             return;
         sets[attr] = {
@@ -112,12 +109,12 @@ function addBodyData(body_data) {
     body_data.forEach(e => {
 
         const obj = {};
-        for (var key in e) {
-            const h = header[e[key]]
-            if (h.value === "true" || h.value === "false") {
-                obj[h.attribute] = +(h.value === "true"); // convert from "true"/"false" to 0/1
+        for (let key in e) {
+            const {attribute, value} = header[e[key]]
+            if (value === "true" || value === "false") {
+                obj[attribute] = +(value === "true"); // convert from "true"/"false" to 0/1
             }
-            else obj[h.attribute] = h.value;
+            else obj[attribute] = value;
             // anything that isn't true/false will be normalized later
         }
         // console.log(obj)
