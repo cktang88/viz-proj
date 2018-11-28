@@ -60,8 +60,10 @@ function inputSubmitted() {
     const parseRawData = (raw) => {
         const result = []
         raw.split('\n')
-            .map(line => line.split(' ').filter(s => s.trim().length > 0))
-            .forEach(line => result.push(Object.assign({}, line)))
+            // clean lines
+            .map(line => line.split(' ').filter(token => token.trim().length > 0))
+            // convert each line to obj
+            .forEach(line => result.push({...line}))
         return result
     }
 
