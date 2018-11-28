@@ -20,8 +20,8 @@ const width = 100,
     margin = 2.5,
     textPad = 20,
     saturation = 94,
-    lum = 70,
-    lumDiff = 20
+    lum = 75,
+    lumDiff = 15
 this.baseColor = "#3a3a3a"; // color of each false pixel
 
 
@@ -58,7 +58,7 @@ function inputSubmitted() {
 
     // small helper func to translate raw string data into nic obj format
     const parseRawData = (raw, numTokens) => {
-        const result = []
+        let result = []
         let validInput = true
         raw.split('\n')
             // clean lines
@@ -86,11 +86,13 @@ function inputSubmitted() {
         return;
     }
     let invalidHeader = false
+    let NEW_ATTRIBUTE;
     newheaders.forEach(h => {
         if (h[0] in header) {
             alert(`Error: The key ${h[0]} = "${header[h[0]].attribute}". Cannot remap to "${h[1]}".`)
             invalidHeader = true
         }
+        NEW_ATTRIBUTE = h[1]; // set newAttr
     })
     if (invalidHeader){
         return
@@ -103,11 +105,38 @@ function inputSubmitted() {
 
     // add new data + refresh
     addHeaderData(newheaders);
-    // addBodyData(newbody);
+    addNewAttr(NEW_ATTRIBUTE, newbody);
+    plotPixelLayer(NEW_ATTRIBUTE, layers.length + 4) // temporary cushion, TODO: put on newline always
+    // normalizeToBinary()
+    assignColors()
+    console.log(elements)
 
     // if success, show confirm, clear input
     // document.getElementById('header_input').value = ''
     // document.getElementById('body_input').value = ''
+}
+
+function addNewAttr(newAttr, newbody){
+    // add the new attr to each element
+    elements.forEach((e, i) => {
+        if (newbody.length === 0)
+            return
+        let num = newbody.shift()[0]
+        if (parseInt(num))
+            num = parseInt(num)
+        console.log(num)
+        let value = header[num].value // TODO: FIX
+        const newElem = e
+        if (value === "true" || value === "false") {
+            newElem[newAttr] = +(value === "true"); // convert from "true"/"false" to 0/1
+        }
+        else {
+            // anything that isn't true/false will be normalized later
+            newElem[newAttr] = value;
+        }
+        elements[i] = newElem
+    })
+    console.log(elements)
 }
 
 // main method, loads data
@@ -193,8 +222,10 @@ function assignColors() {
     // console.log(colorScale)
     Object.keys(sets).forEach(attr => {
         // assign new colors only if doesn't already have a color
-        if (!sets[attr].color)
+        if (!sets[attr].color) {
+            console.log(`Setting new color for ${attr}`)
             sets[attr].color = getNewColor();
+        }
         // console.log(sets[attr])
     })
     // console.log(sets)
@@ -276,7 +307,6 @@ const plotPixelLayer = (attr,index) => {
     pixelLayer.call(d3.drag()
     .on("start", function() {
         this.parentElement.appendChild(this); // bring to front
-        console.log(`$ This is the id ${this.id}`)
         topLayer = findPixelLayerByID(this.id)
         console.log('toplayer: ', topLayer)
     })
