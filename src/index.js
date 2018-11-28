@@ -57,23 +57,38 @@ function inputSubmitted() {
     console.log('body: ', newbody);
 
     // small helper func to translate raw string data into nic obj format
-    const parseRawData = (raw) => {
+    const parseRawData = (raw, numTokens) => {
         const result = []
+        let validInput = true
         raw.split('\n')
             // clean lines
             .map(line => line.split(' ').filter(token => token.trim().length > 0))
             // convert each line to obj
-            .forEach(line => result.push({...line}))
-        return result
+            .forEach(tokens => {
+                if (tokens.length === 0 || (numTokens && tokens.length !== numTokens))
+                    validInput = false;
+                result.push({...tokens})
+            })
+        return validInput ? result : false
     }
 
     // make input into nice format
-    newheaders = parseRawData(newheaders)
-    newbody = parseRawData(newbody)
-    console.log(newheaders)
+    const HEADER_LENGTH = 3
+    const BODY_LENGTH = 1
+    newheaders = parseRawData(newheaders, 3)
+    newbody = parseRawData(newbody, 1)
+    console.log('new headers: ', newheaders)
+    console.log('new body: ', newbody)
 
     // some input validation
-    // TODO: if improper format, throw error, stop
+    if (!newheaders) {
+        alert(`Invalid header. \nEach line must have ${HEADER_LENGTH} tokens.`)
+        return;
+    }
+    if (!newbody) {
+        alert(`Invalid body. \nEach line must have ${BODY_LENGTH} tokens.`)
+        return;
+    }
 
     // add new data + refresh
     // addHeaderData(newheaders);
