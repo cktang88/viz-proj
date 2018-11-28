@@ -51,23 +51,35 @@ try {
 function inputSubmitted() {
     // get input
     console.log('submitted input.')
-    const newheaders = document.getElementById('header_input').value
-    const newbody = document.getElementById('body_input').value
+    let newheaders = document.getElementById('header_input').value.trim()
+    let newbody = document.getElementById('body_input').value.trim()
     console.log('headers: ', newheaders)
     console.log('body: ', newbody);
+
+    // small helper func to translate raw string data into nic obj format
+    const parseRawData = (raw) => {
+        const result = []
+        raw.split('\n')
+            .map(line => line.split(' ').filter(s => s.trim().length > 0))
+            .forEach(line => result.push(Object.assign({}, line)))
+        return result
+    }
+
+    // make input into nice format
+    newheaders = parseRawData(newheaders)
+    newbody = parseRawData(newbody)
+    console.log(newheaders)
 
     // some input validation
     // TODO: if improper format, throw error, stop
 
-
-    // make input into nice format
-
-    // add
-
+    // add new data + refresh
+    // addHeaderData(newheaders);
+    // addBodyData(newbody);
 
     // if success, show confirm, clear input
-    document.getElementById('header_input').value = ''
-    document.getElementById('body_input').value = ''
+    // document.getElementById('header_input').value = ''
+    // document.getElementById('body_input').value = ''
 }
 
 // main method, loads data
@@ -107,7 +119,6 @@ function addBodyData(body_data) {
 
     // structure data elements properly
     body_data.forEach(e => {
-
         const obj = {};
         for (let key in e) {
             const {attribute, value} = header[e[key]]
