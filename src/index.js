@@ -25,9 +25,9 @@ const width = 100,
 this.baseColor = "#3a3a3a"; // color of each false pixel
 
 
-var header = {};
-var elements = [];
-var sets = {}; // dict of {attr: {attribute data obj}}
+const header = {};
+const elements = [];
+const sets = {}; // dict of {attr: {attribute data obj}}
 const heightOffset = 132; // distance between top of screen and svg div
 this.colors = new Set();
 
@@ -49,13 +49,25 @@ try {
 }
 
 function inputSubmitted() {
+    // get input
     console.log('submitted input.')
-    const newdata = document.getElementById('datainput').value
-    console.log(newdata)
+    const newheaders = document.getElementById('header_input').value
+    const newbody = document.getElementById('body_input').value
+    console.log('headers: ', newheaders)
+    console.log('body: ', newbody);
+
+    // some input validation
     // TODO: if improper format, throw error, stop
 
+
+    // make input into nice format
+
+    // add
+
+
     // if success, show confirm, clear input
-    // reuse loadBody() somehow
+    document.getElementById('header_input').value = ''
+    document.getElementById('body_input').value = ''
 }
 
 // main method, loads data
@@ -64,67 +76,73 @@ function loadData() {
     loadBody();
 }
 
+function addHeaderData(header_data) {
+    console.log(header_data);
+    header_data.forEach(e => {
+        console.log('header:', e)
+        // complicated method to add attributes to `headers` hashmap
+        const keys = Object.keys(e);
+        // console.log(keys);
+        const obj = {
+            attribute: e[keys[1]],
+            value: e[keys[2]]
+        };
+        // console.log(obj)
+        header[e[keys[0]]] = obj;
+        // console.log(header)
+    });
+
+    // create sets
+    Object.keys(header).forEach(e => {
+        let attr = header[e].attribute;
+        if (attr in sets) // don't recompute repeated attrs
+            return;
+        sets[attr] = {
+            data: []
+        };
+    });
+    console.log('sets: ')
+    console.log(sets)
+}
+
+function addBodyData(body_data) {
+    // console.log(body_data);
+
+    // structure data elements properly
+    body_data.forEach(e => {
+
+        const obj = {};
+        for (var key in e) {
+            const h = header[e[key]]
+            if (h.value === "true" || h.value === "false") {
+                obj[h.attribute] = +(h.value === "true"); // convert from "true"/"false" to 0/1
+            }
+            else obj[h.attribute] = h.value;
+            // anything that isn't true/false will be normalized later
+        }
+        // console.log(obj)
+        elements.push(obj)
+        // console.log(elements)
+    })
+    console.log('elements: ')
+    console.log(elements)
+}
+
 function loadHeaders() {
     // load headers
     d3.csv('./data/zoo-header.csv')
-        .then(function (data) {
-            // console.log(data);
-            data.forEach(e => {
-                // complicated method to add attributes to `headers` hashmap
-                let keys = Object.keys(e);
-                // console.log(keys);
-                let obj = {
-                    attribute: e[keys[1]],
-                    value: e[keys[2]]
-                };
-                // console.log(obj)
-                header[e[keys[0]]] = obj;
-                // console.log(header)
-            });
-        })
+        .then(addHeaderData)
         .then(() => {
             console.log('headers: ')
             console.log(header)
         })
         .catch(err => console.error(err))
-
 }
 
 function loadBody() {
     // load body elements
     d3.csv('./data/zoo-body.csv')
-        .then(function (data) {
-            // console.log(data);
-            // structure data elements properly
-            data.forEach(e => {
-
-                let obj = {};
-                for (var key in e) {
-                    let h = header[e[key]]
-                    if (h.value === "true" || h.value === "false") {
-                        obj[h.attribute] = +(h.value === "true"); // convert from "true"/"false" to 0/1
-                    }
-                    else obj[h.attribute] = h.value;
-                    // anything that isn't true/false will be normalized later
-                }
-                // console.log(obj)
-                elements.push(obj)
-                // console.log(elements)
-            })
-            console.log('elements: ')
-            console.log(elements)
-
-            Object.keys(header).forEach(e => {
-                let attr = header[e].attribute;
-                if (attr in sets) // don't recompute repeated attrs
-                    return;
-                sets[attr] = {
-                    data: []
-                };
-            });
-            console.log('sets: ')
-            console.log(sets)
-        })
+        .then(addBodyData)
         .then(normalizeToBinary) // This is specific to the animal dataset, convert # legs to true/false value
         .then(assignColors) // assign colors for each attr
         .then(plot_it) // plot
@@ -133,8 +151,10 @@ function loadBody() {
 
 function assignColors() {
     // console.log(colorScale)
-    Object.keys(sets).forEach((attr, i) => {
-        sets[attr].color = getNewColor();
+    Object.keys(sets).forEach(attr => {
+        // assign new colors only if doesn't already have a color
+        if (!sets[attr].color)
+            sets[attr].color = getNewColor();
         // console.log(sets[attr])
     })
     // console.log(sets)
@@ -160,9 +180,9 @@ const plotPixelLayer = (attr,index) => {
         .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
-            let DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
-            console.log(DISPLAY_WIDTH)
-            let currOut = index*(width+margin)+2*width
+            const DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
+
+            const currOut = index*(width+margin)+2*width
             if (Math.floor(currOut/DISPLAY_WIDTH)!=Math.floor(((index-1)*(width+margin)+2*width)/DISPLAY_WIDTH)) {
                 this.offset = -1*((currOut%DISPLAY_WIDTH)-2*width)
             }
