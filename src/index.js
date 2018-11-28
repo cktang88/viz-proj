@@ -50,10 +50,21 @@ try {
 
 function inputSubmitted() {
     console.log('submitted input.')
+    const newdata = document.getElementById('datainput').value
+    console.log(newdata)
+    // TODO: if improper format, throw error, stop
+
+    // if success, show confirm, clear input
+    // reuse loadBody() somehow
 }
 
-// main method
+// main method, loads data
 function loadData() {
+    loadHeaders();
+    loadBody();
+}
+
+function loadHeaders() {
     // load headers
     d3.csv('./data/zoo-header.csv')
         .then(function (data) {
@@ -77,6 +88,9 @@ function loadData() {
         })
         .catch(err => console.error(err))
 
+}
+
+function loadBody() {
     // load body elements
     d3.csv('./data/zoo-body.csv')
         .then(function (data) {
