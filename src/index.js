@@ -106,16 +106,16 @@ function inputSubmitted() {
     // add new data + refresh
     addHeaderData(newheaders);
     addNewAttr(NEW_ATTRIBUTE, newbody);
+    assignColors()
     plotPixelLayer(NEW_ATTRIBUTE, layers.length + 4) // temporary cushion, TODO: put on newline always
     // normalizeToBinary()
-    assignColors()
-    console.log(elements)
 
     // if success, show confirm, clear input
     // document.getElementById('header_input').value = ''
     // document.getElementById('body_input').value = ''
 }
 
+// when inputing new body data
 function addNewAttr(newAttr, newbody){
     // add the new attr to each element
     elements.forEach((e, i) => {
@@ -136,7 +136,7 @@ function addNewAttr(newAttr, newbody){
         }
         elements[i] = newElem
     })
-    console.log(elements)
+    console.log('elements: ', elements)
 }
 
 // main method, loads data
@@ -397,15 +397,11 @@ let findPixelLayerByID = (layerID) => {
 function plot_it() {
 
     // plot a pixelLayer for each animal attribute
-    let i = 0
     setGlobalVars();
     //hack to support firefox
     d3.select('.container').append('svg').attr("x",0).attr("y",1000).append("text").text("CS3891 Vanderbilt University")
 
-    Object.keys(elements[0]).forEach((key) => {
-        plotPixelLayer(key,i);
-        i+=1
-    })
+    Object.keys(elements[0]).forEach((key, i) => plotPixelLayer(key,i))
     console.log(this.layers)
     console.log("done")
 }
