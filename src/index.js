@@ -75,8 +75,8 @@ function inputSubmitted() {
     // make input into nice format
     const HEADER_LENGTH = 3
     const BODY_LENGTH = 1
-    newheaders = parseRawData(newheaders, 3)
-    newbody = parseRawData(newbody, 1)
+    newheaders = parseRawData(newheaders, HEADER_LENGTH)
+    newbody = parseRawData(newbody, BODY_LENGTH)
     console.log('new headers: ', newheaders)
     console.log('new body: ', newbody)
 
@@ -85,13 +85,24 @@ function inputSubmitted() {
         alert(`Invalid header. \nEach line must have ${HEADER_LENGTH} tokens.`)
         return;
     }
+    let invalidHeader = false
+    newheaders.forEach(h => {
+        if (h[0] in header) {
+            alert(`Error: The key ${h[0]} = "${header[h[0]].attribute}". Cannot remap to "${h[1]}".`)
+            invalidHeader = true
+        }
+    })
+    if (invalidHeader){
+        return
+    }
+
     if (!newbody) {
         alert(`Invalid body. \nEach line must have ${BODY_LENGTH} tokens.`)
         return;
     }
 
     // add new data + refresh
-    // addHeaderData(newheaders);
+    addHeaderData(newheaders);
     // addBodyData(newbody);
 
     // if success, show confirm, clear input
@@ -111,12 +122,20 @@ function addHeaderData(header_data) {
         // console.log('header:', e)
         // add attributes to `headers` hashmap
         const [num, attr, val] = Object.keys(e);
-        header[e[num]] = {
-            attribute: e[attr],
-            value: e[val]
-        };
+        if (e[num] in header) {
+            alert(`Error adding header data: The key ${num} = "${header[e[num]].attribute}". Cannot remap to "${e[attr]}".`)
+        }
+        else {
+            header[e[num]] = {
+                attribute: e[attr],
+                value: e[val]
+            };
+        }
         // console.log(header)
     });
+    
+    console.log('headers: ')
+    console.log(header)
 
     // create sets
     Object.keys(header).forEach(e => {
@@ -157,10 +176,6 @@ function loadHeaders() {
     // load headers
     d3.csv('./data/zoo-header.csv')
         .then(addHeaderData)
-        .then(() => {
-            console.log('headers: ')
-            console.log(header)
-        })
         .catch(err => console.error(err))
 }
 
