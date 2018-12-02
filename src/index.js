@@ -50,11 +50,11 @@ try {
 
 function inputSubmitted() {
     // get input
-    console.log('submitted input.')
+    // console.log('submitted input.')
     let newheaders = document.getElementById('header_input').value.trim()
     let newbody = document.getElementById('body_input').value.trim()
-    console.log('headers: ', newheaders)
-    console.log('body: ', newbody);
+    // console.log('headers: ', newheaders)
+    // console.log('body: ', newbody);
 
     // small helper func to translate raw string data into nic obj format
     const parseRawData = (raw, numTokens) => {
@@ -77,8 +77,8 @@ function inputSubmitted() {
     const BODY_LENGTH = 1
     newheaders = parseRawData(newheaders, HEADER_LENGTH)
     newbody = parseRawData(newbody, BODY_LENGTH)
-    console.log('new headers: ', newheaders)
-    console.log('new body: ', newbody)
+    // console.log('new headers: ', newheaders)
+    // console.log('new body: ', newbody)
 
     // some input validation
     if (!newheaders) {
@@ -124,7 +124,7 @@ function addNewAttr(newAttr, newbody){
         let num = newbody.shift()[0]
         if (parseInt(num))
             num = parseInt(num)
-        console.log(num)
+        // console.log(num)
         let value = header[num].value // TODO: FIX
         const newElem = e
         if (value === "true" || value === "false") {
@@ -136,7 +136,7 @@ function addNewAttr(newAttr, newbody){
         }
         elements[i] = newElem
     })
-    console.log('elements: ', elements)
+    // console.log('elements: ', elements)
 }
 
 // main method, loads data
@@ -146,7 +146,7 @@ function loadData() {
 }
 
 function addHeaderData(header_data) {
-    console.log(header_data);
+    // console.log(header_data);
     header_data.forEach(e => {
         // console.log('header:', e)
         // add attributes to `headers` hashmap
@@ -163,8 +163,8 @@ function addHeaderData(header_data) {
         // console.log(header)
     });
     
-    console.log('headers: ')
-    console.log(header)
+    // console.log('headers: ')
+    // console.log(header)
 
     // create sets
     Object.keys(header).forEach(e => {
@@ -175,8 +175,8 @@ function addHeaderData(header_data) {
             data: []
         };
     });
-    console.log('sets: ')
-    console.log(sets)
+    // console.log('sets: ')
+    // console.log(sets)
 }
 
 function addBodyData(body_data) {
@@ -197,8 +197,8 @@ function addBodyData(body_data) {
         elements.push(obj)
         // console.log(elements)
     })
-    console.log('elements: ')
-    console.log(elements)
+    // console.log('elements: ')
+    // console.log(elements)
 }
 
 function loadHeaders() {
@@ -223,7 +223,7 @@ function assignColors() {
     Object.keys(sets).forEach(attr => {
         // assign new colors only if doesn't already have a color
         if (!sets[attr].color) {
-            console.log(`Setting new color for ${attr}`)
+            // console.log(`Setting new color for ${attr}`)
             sets[attr].color = getNewColor();
         }
         // console.log(sets[attr])
@@ -308,7 +308,7 @@ const plotPixelLayer = (attr,index) => {
     .on("start", function() {
         this.parentElement.appendChild(this); // bring to front
         topLayer = findPixelLayerByID(this.id)
-        console.log('toplayer: ', topLayer)
+        // console.log('toplayer: ', topLayer)
     })
     .on("drag", function() {
         let mouse = window.event ? mousePos() : d3.mouse(this) // accounts for Firefox and Chrome
@@ -326,24 +326,23 @@ const plotPixelLayer = (attr,index) => {
         updatePixelLayerLoc(topLayer, newloc)
 
         if (!layerTwo) {
-            console.log('layer2 not found.')
+            // console.log('layer2 not found.')
             return
         }
         if (topLayer.label === layerTwo.label) {
-            console.log('source=target pixel layer, abort')
+            // console.log('source=target pixel layer, abort')
             return
         }
-        console.log("layer 1 and 2:")
-        console.log(topLayer)
-        console.log(layerTwo)
+        // console.log("layer 1 and 2:")
+        // console.log(topLayer)
+        // console.log(layerTwo)
 
         let jointype = document.getElementById("join-select").value
 
         combineLayer(topLayer, layerTwo, jointype == 'and' ? JoinType.AND : JoinType.OR)
-
         // combine layers
         // TODO: enable choosing AND/OR join types via HTML checkbox/input field
-
+        dehighlightAll()
         // combineLayer(topLayer, layerTwo, JoinType.AND)
     })
     );
@@ -359,6 +358,12 @@ let highlightPixel = (index, highlight) => {
             // return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
         }
         // return d[attr] > 0 ? sets[attr].color : baseColor
+        return 'none'
+    })
+}
+
+let dehighlightAll = () => {
+    d3.select('.container').selectAll(`.pixel`).attr("stroke", function(d) {
         return 'none'
     })
 }
@@ -402,8 +407,8 @@ function plot_it() {
     d3.select('.container').append('svg').attr("x",0).attr("y",1000).append("text").text("CS3891 Vanderbilt University")
 
     Object.keys(elements[0]).forEach((key, i) => plotPixelLayer(key,i))
-    console.log(this.layers)
-    console.log("done")
+    // console.log(this.layers)
+    // console.log("done")
 }
 
 const setGlobalVars = () => {
@@ -435,7 +440,7 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     if (joinType === JoinType.AND) {
         combineFunc = (e,i) => e*topLayer.data[i] > 0 ? e+topLayer.data[i] : 0
     }
-    console.log('Layers joined with: ', joinType)
+    // console.log('Layers joined with: ', joinType)
     bottomLayer.data = bottomLayer.data.map(combineFunc)
 
     bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
