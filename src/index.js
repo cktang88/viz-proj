@@ -107,7 +107,10 @@ function inputSubmitted() {
     addHeaderData(newheaders);
     addNewAttr(NEW_ATTRIBUTE, newbody);
     assignColors()
-    plotPixelLayer(NEW_ATTRIBUTE, layers.length + 4) // temporary cushion, TODO: put on newline always
+    // always puts new pixellayer on newline
+    let xInit = margin;
+    let yInit = Math.max(...layers.map(layer => layer.y)) + margin + textPad + height
+    plotPixelLayer(NEW_ATTRIBUTE, layers.length, xInit, yInit)
     // normalizeToBinary()
 
     // if success, show confirm, clear input
@@ -235,6 +238,9 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
     const layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
         xScale = layerScale([0, width]), // pixel width and X position
         yScale = layerScale([0, height]) // pixel height and Y position
+    
+    const DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
+    const blockSize = width + margin
 
     let y = 0
     let x = 0
@@ -245,18 +251,17 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
         .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
-            const DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
-
-            const currOut = index*(width+margin)+2*width
-            if (Math.floor(currOut/DISPLAY_WIDTH)!=Math.floor(((index-1)*(width+margin)+2*width)/DISPLAY_WIDTH)) {
-                this.offset = -1*((currOut%DISPLAY_WIDTH)-2*width)
-            }
+            const currOut = index*blockSize + 2*width
             y = Math.floor(currOut/DISPLAY_WIDTH)
-            x = (currOut%DISPLAY_WIDTH)-2*width+this.offset
+            const actualX = (currOut%DISPLAY_WIDTH) - 2*width
+            if (y !== Math.floor((currOut - blockSize)/DISPLAY_WIDTH)) {
+                this.offset = -actualX
+            }
+            x = actualX + this.offset
             return xInit || x
         })
         .attr("y", ()=> {
-            y = y*(width+textPad+margin)
+            y *= (blockSize+textPad)
             return yInit || y
         })
     
