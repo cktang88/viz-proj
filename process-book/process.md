@@ -50,6 +50,8 @@ This was a `.txt` file [here](/src/data/zoo-raw.txt). The steps to get it into u
    
 3. Convert the tabular data to a good data representation using JS objects. In the code, we ended up deciding to use an object to represent headers, an array of elements representing pixels, and 
 
+
+**Adding new data** See the [help guide](./help.md)
     
 Implementation
 ---
