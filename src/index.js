@@ -22,14 +22,22 @@ const width = 100,
     saturation = 94,
     lum = 75,
     lumDiff = 15
-this.baseColor = "#3a3a3a"; // color of each false pixel
-
 
 const header = {};
 const elements = [];
 const sets = {}; // dict of {attr: {attribute data obj}}
 const heightOffset = 132; // distance between top of screen and svg div
-this.colors = new Set();
+
+
+const setGlobalVars = () => {
+    this.offset = 0;
+    this.layers = [];
+    this.customLayerData = {} //
+    this.colors = new Set(); // all colors
+    this.baseColor = "#3a3a3a"; // color of each false pixel
+}
+
+setGlobalVars();
 
 let getNewColor = () => { // HSL, saturation is already defined as a user parameter
     let hue = Math.round(Math.random()*360)
@@ -315,8 +323,7 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
         d3.select(this).attr("x", mouse[0]-(width/2)).attr("y", mouse[1]-(width/2)).style('opacity', .8); // follow mouse
     })
     .on("end", function() {
-        d3.select(this)
-        .style('opacity', 1)
+        d3.select(this).style('opacity', 1)
         const mouseLoc = window.event ? mousePos() : d3.mouse(this)
         const layerTwo = getPixelLayerAtLoc(mouseLoc, width);
 
@@ -324,18 +331,10 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
         const newloc = [mouseLoc[0] - width/2, mouseLoc[1] - height/2]
         updatePixelLayerLoc(topLayer, newloc)
 
-        if (!layerTwo) {
-            // console.log('layer2 not found.')
+        if (!layerTwo)
             return
-        }
-        if (topLayer.label === layerTwo.label) {
-            // console.log('source=target pixel layer, abort')
+        if (topLayer.label === layerTwo.label)
             return
-        }
-        // console.log("layer 1 and 2:")
-        // console.log(topLayer)
-        // console.log(layerTwo)
-
         let jointype = document.getElementById("join-select").value
 
         combineLayer(topLayer, layerTwo, jointype == 'and' ? JoinType.AND : JoinType.OR)
@@ -348,23 +347,11 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
 }
 
 let highlightPixel = (index, highlight) => {
-    d3.select('.container').selectAll(`.pixel.i${index}`).attr("stroke", function(d) {
-        if (highlight) return "white"
-        let attr = this.attributes.pixelattr.nodeValue
-        // it's a custom pixel
-        if (d[attr] == undefined)  {
-            // console.log(customLayerData[attr])
-            // return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
-        }
-        // return d[attr] > 0 ? sets[attr].color : baseColor
-        return 'none'
-    })
+    d3.select('.container').selectAll(`.pixel.i${index}`).attr("stroke", d => highlight ? 'white' : 'none')
 }
 
 let dehighlightAll = () => {
-    d3.select('.container').selectAll(`.pixel`).attr("stroke", function(d) {
-        return 'none'
-    })
+    d3.select('.container').selectAll(`.pixel`).attr("stroke", d => 'none')
 }
 
 const JoinType = {
@@ -401,19 +388,13 @@ let findPixelLayerByID = (layerID) => {
 function plot_it() {
 
     // plot a pixelLayer for each animal attribute
-    setGlobalVars();
+
     //hack to support firefox
     d3.select('.container').append('svg').attr("x",0).attr("y",1000).append("text").text("CS3891 Vanderbilt University")
 
     Object.keys(elements[0]).forEach((key, i) => plotPixelLayer(key,i))
     // console.log(this.layers)
     // console.log("done")
-}
-
-const setGlobalVars = () => {
-    this.offset = 0;
-    this.layers = [];
-    this.customLayerData = {}
 }
 
 const JoinTypeString = ["AND", "OR"]

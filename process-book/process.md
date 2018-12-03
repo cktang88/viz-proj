@@ -48,7 +48,7 @@ This was a `.txt` file [here](/src/data/zoo-raw.txt). The steps to get it into u
 2. Convert both those text files to `.csv` format via [browserling](https://www.browserling.com/tools/text-to-csv). Result is:
    [header csv](/src/data/zoo-header.csv) and [body csv](src/data/zoo-body.csv).
    
-3. Convert the tabular data to 
+3. Convert the tabular data to a good data representation using JS objects. In the code, we ended up deciding to use an object to represent headers, an array of elements representing pixels, and 
 
     
 Implementation
@@ -122,3 +122,10 @@ Timeline
     - via help from external npm lib (used Node.js + `package.json`), but on build creates a static JS file that is linked in main `index.html`
 - add ability to input new pixel layers to data
     - b/c we don't have a backend server, we can't do file upload, so we'll use an input box
+
+### Presentation
+
+- create new pixel layers on new line
+- add detailed documentation on how to create new pixel layers
+- fix mouse highlighting bug not resetting on layer join
+- _LOTS_ of refactoring
