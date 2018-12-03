@@ -33,7 +33,7 @@ this.colors = new Set();
 
 let getNewColor = () => { // HSL, saturation is already defined as a user parameter
     let hue = Math.round(Math.random()*360)
-    while(this.colors.has(hue)) hue = Math.round(Math.random())*360 // no duplicate colors
+    while(this.colors.has(hue)) hue = Math.round(Math.random()*360) // no duplicate colors
     //TODO: get rid of pixelLayer means we should remove colors, or we can also assume # pixelLayers < 360
     this.colors.add(hue);
     return `hsl(${hue},${saturation}%,${lum}%)`
@@ -219,20 +219,14 @@ function loadBody() {
 }
 
 function assignColors() {
-    // console.log(colorScale)
-    Object.keys(sets).forEach(attr => {
-        // assign new colors only if doesn't already have a color
-        if (!sets[attr].color) {
-            // console.log(`Setting new color for ${attr}`)
-            sets[attr].color = getNewColor();
-        }
-        // console.log(sets[attr])
-    })
-    // console.log(sets)
+    // assign new colors only if doesn't already have a color
+    Object.keys(sets)
+        .filter(attr => !sets[attr].color)
+        .forEach(attr => sets[attr].color = getNewColor())
 }
 
 // function to plot each pixelLayer
-const plotPixelLayer = (attr,index) => {
+const plotPixelLayer = (attr,index, xInit, yInit) => {
 
     // number of rows and columns
     const rowcolNum = numberOfRowsCol(elements.length);
@@ -259,11 +253,11 @@ const plotPixelLayer = (attr,index) => {
             }
             y = Math.floor(currOut/DISPLAY_WIDTH)
             x = (currOut%DISPLAY_WIDTH)-2*width+this.offset
-            return x
+            return xInit || x
         })
         .attr("y", ()=> {
             y = y*(width+textPad+margin)
-            return y
+            return yInit || y
         })
     
     
