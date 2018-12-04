@@ -35,6 +35,10 @@ Questions
 
 - How would we represent data is an honest way?
     - use HSL coloring, and also AND/OR joins should work as expected. In order to further show the effect of the OR join, we implemented the different luminosities keeping the same hue, so that pixels that show more similarity between the combined pixel layers would be darker for easy viewing.
+  
+- How would users be able to add new data?
+    - Users would be able to add data via an input box. We couldn't do server uploading, because the project was front-end only. The data format the users inputted was very important - we decided for DRY code, to have similar pattern to the cleaned csv data, and also decided to verify the data was of the proper format. We implemented several checks to make sure the data was of proper length and format, and also that it didn't conflict with existing data (eg. same keys or same attribute names).
+    - Each new data input submission would create a new pixel layer, which was the best solution because it didn't disrupt the exisitng visualization and would be easy to distinguish.
 
 Data
 ---
