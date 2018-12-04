@@ -93,14 +93,22 @@ function inputSubmitted() {
     }
     let invalidHeader = false
     let NEW_ATTRIBUTE;
-
+    
     newheaders.forEach(([key, attr, val]) => {
+        // check no header keys exist already
         if (key in header) {
             alert(`Error: The key ${key} = "${header[key].attribute}". Cannot redeclare.`)
             invalidHeader = true
         }
+        // check no header attributes exist already
+        if (attr in sets){
+            alert(`Error: The attribute ${attr} exists already. Cannot redeclare.`)
+            invalidHeader = true
+        }
+
         NEW_ATTRIBUTE = attr; // set newAttr
     })
+    
     if (invalidHeader){
         return
     }
