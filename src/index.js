@@ -117,6 +117,7 @@ function inputSubmitted() {
     const xInit = margin;
     const yInit = Math.max(...layers.map(layer => layer.y)) + margin + textPad + height
     plotPixelLayer(NEW_ATTRIBUTE, layers.length, xInit, yInit)
+
     // normalizeToBinary()
 
     // if success, show confirm, clear input
@@ -251,6 +252,10 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
         .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
+            if (xInit) {
+                x = xInit
+                return x
+            }
             const currOut = index*blockSize + 2*width
             y = Math.floor(currOut/DISPLAY_WIDTH)
             const actualX = (currOut%DISPLAY_WIDTH) - 2*width
@@ -258,11 +263,15 @@ const plotPixelLayer = (attr,index, xInit, yInit) => {
                 this.offset = -actualX
             }
             x = actualX + this.offset
-            return xInit || x
+            return x
         })
         .attr("y", ()=> {
+            if (yInit) {
+                y = yInit
+                return y
+            }
             y *= (blockSize+textPad)
-            return yInit || y
+            return y
         })
     
     
