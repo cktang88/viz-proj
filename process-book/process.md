@@ -32,6 +32,7 @@ Questions
 
 - What interactions would be most useful for the users?
     - the drag-and-drop is very crucial because that's the main way of differentiating large amounts of binary data in two different pixel layers.
+    - Mouse hovering was also very important. People needed to be able to easily see which pixels correspond to the same element across multiple attributes.
 
 - How would we represent data is an honest way?
     - use HSL coloring, and also AND/OR joins should work as expected. In order to further show the effect of the OR join, we implemented the different luminosities keeping the same hue, so that pixels that show more similarity between the combined pixel layers would be darker for easy viewing.
