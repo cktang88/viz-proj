@@ -73,7 +73,7 @@ function inputSubmitted() {
             .forEach(tokens => {
                 if (tokens.length === 0 || (numTokens && tokens.length !== numTokens))
                     validInput = false;
-                result.push({...tokens})
+                result.push([...tokens])
             })
         return validInput ? result : false
     }
@@ -93,20 +93,35 @@ function inputSubmitted() {
     }
     let invalidHeader = false
     let NEW_ATTRIBUTE;
-    newheaders.forEach(h => {
-        if (h[0] in header) {
-            alert(`Error: The key ${h[0]} = "${header[h[0]].attribute}". Cannot remap to "${h[1]}".`)
+
+    newheaders.forEach(([key, attr, val]) => {
+        if (key in header) {
+            alert(`Error: The key ${key} = "${header[key].attribute}". Cannot redeclare.`)
             invalidHeader = true
         }
-        NEW_ATTRIBUTE = h[1]; // set newAttr
+        NEW_ATTRIBUTE = attr; // set newAttr
     })
     if (invalidHeader){
         return
     }
-
+    // check all lines in body right length
     if (!newbody) {
         alert(`Invalid body. \nEach line must have ${BODY_LENGTH} tokens.`)
         return;
+    }
+    // check all lines in body contains attr in header
+    let invalidBody = false
+    const headerkeys = newheaders.map(e=>e[0])
+    console.log(headerkeys)
+    newbody.map(e=> e[0]).forEach(e => {
+        console.log(e)
+        if(!headerkeys.includes(e)) {
+            alert(`${e} is an invalid element in body (must match a header entry).`)
+            invalidBody = true
+        }
+    })
+    if (invalidBody){
+        return
     }
 
     // add new data + refresh
@@ -230,7 +245,7 @@ function assignColors() {
 }
 
 // function to plot each pixelLayer
-const plotPixelLayer = (attr,index, xInit, yInit) => {
+const plotPixelLayer = (attr, index, xInit, yInit) => {
 
     // number of rows and columns
     const rowcolNum = numberOfRowsCol(elements.length);
