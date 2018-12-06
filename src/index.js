@@ -22,19 +22,28 @@ const width = 100,
     saturation = 94,
     lum = 75,
     lumDiff = 15
-this.baseColor = "#3a3a3a"; // color of each false pixel
-
 
 const header = {};
 const elements = [];
 const sets = {}; // dict of {attr: {attribute data obj}}
 const heightOffset = 132; // distance between top of screen and svg div
-this.colors = new Set();
 
-let getNewColor = () => { // HSL, saturation is already defined as a user parameter
+this.offset = 0; // offset, used for plotting pixel layers
+this.layers = []; // pixel layers
+this.colors = new Set(); // all colors
+this.baseColor = "#3a3a3a"; // color of each false pixel
+
+const JoinType = {
+    AND: 'AND',
+    OR: 'OR'
+}
+
+const getNewColor = () => { // HSL, saturation is already defined as a user parameter
     let a = Math.round(Math.random()*360)
     let b = Math.round(Math.random()*360)
     while(this.colors.has(hue)) hue = Math.round(Math.random())*360 // no duplicate colors
+    let hue;
+    while(!hue || this.colors.has(hue)) hue = Math.round(Math.random()*360) // no duplicate colors
     //TODO: get rid of pixelLayer means we should remove colors, or we can also assume # pixelLayers < 360
     this.colors.add(hue);
     return `hsl(${hue},${saturation}%,${lum}%)`
@@ -46,16 +55,15 @@ try {
     loadData();
 } catch (e) {
     console.log(e);
-    alert('Error loading data due to CORS security issue, please use Firefox!')
+    alert('Error loading data due to CORS security issue, please run a web server.')
 }
 
+/**
+ * Gets input
+ */
 function inputSubmitted() {
-    // get input
-    // console.log('submitted input.')
     let newheaders = document.getElementById('header_input').value.trim()
     let newbody = document.getElementById('body_input').value.trim()
-    // console.log('headers: ', newheaders)
-    // console.log('body: ', newbody);
 
     // small helper func to translate raw string data into nic obj format
     const parseRawData = (raw, numTokens) => {
@@ -68,7 +76,7 @@ function inputSubmitted() {
             .forEach(tokens => {
                 if (tokens.length === 0 || (numTokens && tokens.length !== numTokens))
                     validInput = false;
-                result.push({...tokens})
+                result.push([...tokens])
             })
         return validInput ? result : false
     }
@@ -88,27 +96,54 @@ function inputSubmitted() {
     }
     let invalidHeader = false
     let NEW_ATTRIBUTE;
-    newheaders.forEach(h => {
-        if (h[0] in header) {
-            alert(`Error: The key ${h[0]} = "${header[h[0]].attribute}". Cannot remap to "${h[1]}".`)
+    
+    newheaders.forEach(([key, attr, val]) => {
+        // check no header keys exist already
+        if (key in header) {
+            alert(`Error: The key ${key} = "${header[key].attribute}". Cannot redeclare.`)
             invalidHeader = true
         }
-        NEW_ATTRIBUTE = h[1]; // set newAttr
+        // check no header attributes exist already
+        if (attr in sets){
+            alert(`Error: The attribute ${attr} exists already. Cannot redeclare.`)
+            invalidHeader = true
+        }
+
+        NEW_ATTRIBUTE = attr; // set newAttr
     })
+    
     if (invalidHeader){
         return
     }
-
+    // check all lines in body right length
     if (!newbody) {
         alert(`Invalid body. \nEach line must have ${BODY_LENGTH} tokens.`)
         return;
+    }
+    // check all lines in body contains attr in header
+    let invalidBody = false
+    const headerkeys = newheaders.map(e=>e[0])
+    console.log(headerkeys)
+    newbody.map(e=> e[0]).forEach(e => {
+        console.log(e)
+        if(!headerkeys.includes(e)) {
+            alert(`${e} is an invalid element in body (must match a header entry).`)
+            invalidBody = true
+        }
+    })
+    if (invalidBody){
+        return
     }
 
     // add new data + refresh
     addHeaderData(newheaders);
     addNewAttr(NEW_ATTRIBUTE, newbody);
     assignColors()
-    plotPixelLayer(NEW_ATTRIBUTE, layers.length + 4) // temporary cushion, TODO: put on newline always
+    // always puts new pixellayer on newline
+    const xInit = margin;
+    const yInit = Math.max(...layers.map(layer => layer.y)) + margin + textPad + height
+    plotPixelLayer(NEW_ATTRIBUTE, layers.length, xInit, yInit)
+
     // normalizeToBinary()
 
     // if success, show confirm, clear input
@@ -125,8 +160,8 @@ function addNewAttr(newAttr, newbody){
         let num = newbody.shift()[0]
         if (parseInt(num))
             num = parseInt(num)
-        // console.log(num)
-        let value = header[num].value // TODO: FIX
+
+        const value = header[num].value
         const newElem = e
         if (value === "true" || value === "false") {
             newElem[newAttr] = +(value === "true"); // convert from "true"/"false" to 0/1
@@ -181,8 +216,6 @@ function addHeaderData(header_data) {
 }
 
 function addBodyData(body_data) {
-    // console.log(body_data);
-
     // structure data elements properly
     body_data.forEach(e => {
         const obj = {};
@@ -194,12 +227,8 @@ function addBodyData(body_data) {
             else obj[attribute] = value;
             // anything that isn't true/false will be normalized later
         }
-        // console.log(obj)
         elements.push(obj)
-        // console.log(elements)
     })
-    // console.log('elements: ')
-    // console.log(elements)
 }
 
 function loadHeaders() {
@@ -220,20 +249,14 @@ function loadBody() {
 }
 
 function assignColors() {
-    // console.log(colorScale)
-    Object.keys(sets).forEach(attr => {
-        // assign new colors only if doesn't already have a color
-        if (!sets[attr].color) {
-            // console.log(`Setting new color for ${attr}`)
-            sets[attr].color = getNewColor();
-        }
-        // console.log(sets[attr])
-    })
-    // console.log(sets)
+    // assign new colors only if doesn't already have a color
+    Object.keys(sets)
+        .filter(attr => !sets[attr].color)
+        .forEach(attr => sets[attr].color = getNewColor())
 }
 
 // function to plot each pixelLayer
-const plotPixelLayer = (attr,index) => {
+const plotPixelLayer = (attr, index, xInit, yInit) => {
 
     // number of rows and columns
     const rowcolNum = numberOfRowsCol(elements.length);
@@ -242,6 +265,9 @@ const plotPixelLayer = (attr,index) => {
     const layerScale = d3.scaleLinear().domain([0, rowcolNum]).rangeRound,
         xScale = layerScale([0, width]), // pixel width and X position
         yScale = layerScale([0, height]) // pixel height and Y position
+    
+    const DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
+    const blockSize = width + margin
 
     let y = 0
     let x = 0
@@ -252,18 +278,25 @@ const plotPixelLayer = (attr,index) => {
         .attr('id', attr) // set ID equal to attr
         .style("margin", `${margin}px`)
         .attr("x", ()=> {
-            const DISPLAY_WIDTH = document.getElementById('leftpanel').clientWidth - width
-
-            const currOut = index*(width+margin)+2*width
-            if (Math.floor(currOut/DISPLAY_WIDTH)!=Math.floor(((index-1)*(width+margin)+2*width)/DISPLAY_WIDTH)) {
-                this.offset = -1*((currOut%DISPLAY_WIDTH)-2*width)
+            if (xInit) {
+                x = xInit
+                return x
             }
+            const currOut = index*blockSize + 2*width
             y = Math.floor(currOut/DISPLAY_WIDTH)
-            x = (currOut%DISPLAY_WIDTH)-2*width+this.offset
+            const actualX = (currOut%DISPLAY_WIDTH) - 2*width
+            if (y !== Math.floor((currOut - blockSize)/DISPLAY_WIDTH)) {
+                this.offset = -actualX
+            }
+            x = actualX + this.offset
             return x
         })
         .attr("y", ()=> {
-            y = y*(width+textPad+margin)
+            if (yInit) {
+                y = yInit
+                return y
+            }
+            y *= (blockSize+textPad)
             return y
         })
     
@@ -309,117 +342,82 @@ const plotPixelLayer = (attr,index) => {
     .on("start", function() {
         this.parentElement.appendChild(this); // bring to front
         topLayer = findPixelLayerByID(this.id)
-        // console.log('toplayer: ', topLayer)
     })
     .on("drag", function() {
-        let mouse = window.event ? mousePos() : d3.mouse(this) // accounts for Firefox and Chrome
-        // d3.select(this).attr("transform",`translate(${d3.mouse(this)[0]},${d3.mouse(this)[1]})`)
-        d3.select(this).attr("x", mouse[0]-(width/2)).attr("y", mouse[1]-(width/2)).style('opacity', .8); // follow mouse
+        const mouse = window.event ? mousePos() : d3.mouse(this) // accounts for Firefox and Chrome
+        d3.select(this)
+            .attr("x", mouse[0] - width/2)
+            .attr("y", mouse[1] - height/2)
+            .style('opacity', .8); // follow mouse
     })
     .on("end", function() {
-        d3.select(this)
-        .style('opacity', 1)
+        d3.select(this).style('opacity', 1)
         const mouseLoc = window.event ? mousePos() : d3.mouse(this)
-        const layerTwo = getPixelLayerAtLoc(mouseLoc, width);
+        const layerTwo = getPixelLayerAtLoc(mouseLoc);
 
         // update location AFTER getting second layer so that second layer is different
         const newloc = [mouseLoc[0] - width/2, mouseLoc[1] - height/2]
         updatePixelLayerLoc(topLayer, newloc)
 
-        if (!layerTwo) {
-            // console.log('layer2 not found.')
+        if (!layerTwo)
             return
-        }
-        if (topLayer.label === layerTwo.label) {
-            // console.log('source=target pixel layer, abort')
+        // if same label, disregard
+        if (topLayer.label === layerTwo.label)
             return
-        }
-        // console.log("layer 1 and 2:")
-        // console.log(topLayer)
-        // console.log(layerTwo)
-
         let jointype = document.getElementById("join-select").value
 
         combineLayer(topLayer, layerTwo, jointype == 'and' ? JoinType.AND : JoinType.OR)
-        // combine layers
-        // TODO: enable choosing AND/OR join types via HTML checkbox/input field
         dehighlightAll()
-        // combineLayer(topLayer, layerTwo, JoinType.AND)
     })
     );
 }
 
 let highlightPixel = (index, highlight) => {
-    d3.select('.container').selectAll(`.pixel.i${index}`).attr("stroke", function(d) {
-        if (highlight) return "white"
-        let attr = this.attributes.pixelattr.nodeValue
-        // it's a custom pixel
-        if (d[attr] == undefined)  {
-            // console.log(customLayerData[attr])
-            // return customLayerData[attr][index] > 0 ? sets[attr].color : baseColor
-        }
-        // return d[attr] > 0 ? sets[attr].color : baseColor
-        return 'none'
-    })
+    d3.select('.container').selectAll(`.pixel.i${index}`)
+        .attr("stroke", d => highlight ? 'white' : 'none')
 }
 
 let dehighlightAll = () => {
-    d3.select('.container').selectAll(`.pixel`).attr("stroke", function(d) {
-        return 'none'
-    })
-}
-
-const JoinType = {
-    AND: 0,
-    OR: 1
+    d3.select('.container').selectAll(`.pixel`)
+        .attr("stroke", d => 'none')
 }
 
 // update the pixel colors in the layer by their corresponding data property
 let updatePixelsInLayer = (layer, color) => {
     layer.pixelLayer.selectAll('g').selectAll('g').selectAll('.pixel').attr('fill',(d,i) => {
-        if (layer.lastJoinType == JoinType.OR) color = color.split(",").slice(0,2).concat([`${Math.max(lum-lumDiff*(layer.data[i]-1),20)}%)`]).join()
+        if (layer.lastJoinType == JoinType.OR) 
+            color = color.split(",").slice(0,2).concat([`${Math.max(lum-lumDiff*(layer.data[i]-1),20)}%)`]).join()
         return layer.data[i] > 0 ? color : this.baseColor
     })
 }
 
 // Get the layer at the current x,y location
-let getPixelLayerAtLoc = (location,pixelWidth) => {
-    return this.layers.find((obj) => obj.x < location[0] && obj.x+pixelWidth > location[0] &&  obj.y < location[1] && obj.y+pixelWidth > location[1])
+let getPixelLayerAtLoc = ([locX, locY]) => {
+    return this.layers.find(({x,y}) => x < locX && x+width > locX && y < locY && y+height > locY)
 }
 
 // Update the locations of pixel layers in their layer's object
-let updatePixelLayerLoc = (pixelLayer, location) => {
-    let obj = this.layers.find((e) => e.label == pixelLayer.label)
-    obj.x = location[0]
-    obj.y = location[1]
+let updatePixelLayerLoc = (pixelLayer, [x,y]) => {
+    const obj = this.layers.find(e => e.label == pixelLayer.label)
+    obj.x = x
+    obj.y = y
 }
 
 // Find pixel layers by their ID
 let findPixelLayerByID = (layerID) => {
-    return this.layers.find((obj) => obj.label === layerID)
+    return this.layers.find(obj => obj.label === layerID)
 }
 
-// plot all
+/**
+ * plots all pixel layers
+ */
 function plot_it() {
-
-    // plot a pixelLayer for each animal attribute
-    setGlobalVars();
     //hack to support firefox
-    d3.select('.container').append('svg').attr("x",0).attr("y",1000).append("text").text("CS3891 Vanderbilt University")
-
+    d3.select('.container')
+        .append('svg').attr("x",0).attr("y",1000)
+        .append("text").text("CS3891 Vanderbilt University")
     Object.keys(elements[0]).forEach((key, i) => plotPixelLayer(key,i))
-    // console.log(this.layers)
-    // console.log("done")
 }
-
-const setGlobalVars = () => {
-    this.offset = 0;
-    this.layers = [];
-    this.customLayerData = {}
-}
-
-const JoinTypeString = ["AND", "OR"]
-
 /**
  * 
  * @param {String} topLayer First layer
@@ -445,24 +443,23 @@ let combineLayer = (topLayer, bottomLayer, joinType) => {
     bottomLayer.data = bottomLayer.data.map(combineFunc)
 
     bottomLayer.lastJoinType = joinType // record last join type of B, to display properly (gradient (OR) vs absolute values (AND))
-    bottomLayer.label = `(${a} ${JoinTypeString[joinType]} ${b})`, // new label based on two previous labels
-    this.customLayerData[bottomLayer.label] = bottomLayer.data
+    bottomLayer.label = `(${a} ${joinType} ${b})`, // new label based on two previous labels
     
     bottomLayer.pixelLayer.selectAll(".pixel").attr("pixelattr", bottomLayer.label)
     sets[bottomLayer.label] = {color: sets[b].color}
 
     // https://stackoverflow.com/questions/388996/regex-for-javascript-to-allow-only-alphanumeric keep only alphanumeric characters
     // https://github.com/vijithassar/d3-textwrap modified the node package to support client side javascript and for this project's purposes
-    let wrap = textwrap(`${bottomLayer.label.replace(/[^a-z0-9]/gi,'')}-text`).bounds({height: 480, width: 100});
+    const wrap = textwrap(`${bottomLayer.label.replace(/[^a-z0-9]/gi,'')}-text`).bounds({height: 480, width: 100});
 
     // set layer text
-    bottomLayer.pixelLayer.attr("id", bottomLayer.label).selectAll("text,foreignObject").remove();
+    bottomLayer.pixelLayer.attr("id", bottomLayer.label)
+        .selectAll("text,foreignObject").remove();
     bottomLayer.pixelLayer.attr("id", bottomLayer.label)
         .append("text")
         .text(bottomLayer.label)
         .call(wrap)
     
-    // d3.selectAll('text').call(wrap);
     bottomLayer.pixelLayer.selectAll("foreignObject")
         .attr('font-weight', "bold")
         .attr("y",100)
@@ -490,16 +487,13 @@ function numberOfRowsCol(totalElements) {
 
 function mousePos(e) { //mouse position code inspired by https://plainjs.com/javascript/events/getting-the-current-mouse-position-16/
     e = e || window.event;
-
     var pageX = e.pageX;
     var pageY = e.pageY;
-
     // IE 8
     if (pageX === undefined) {
         pageX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
         pageY = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
     }
-
     return [pageX,pageY-heightOffset]
 }
 

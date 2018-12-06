@@ -32,9 +32,14 @@ Questions
 
 - What interactions would be most useful for the users?
     - the drag-and-drop is very crucial because that's the main way of differentiating large amounts of binary data in two different pixel layers.
+    - Mouse hovering was also very important. People needed to be able to easily see which pixels correspond to the same element across multiple attributes.
 
 - How would we represent data is an honest way?
     - use HSL coloring, and also AND/OR joins should work as expected. In order to further show the effect of the OR join, we implemented the different luminosities keeping the same hue, so that pixels that show more similarity between the combined pixel layers would be darker for easy viewing.
+  
+- How would users be able to add new data?
+    - Users would be able to add data via an input box. We couldn't do server uploading, because the project was front-end only. The data format the users inputted was very important - we decided for DRY code, to have similar pattern to the cleaned csv data, and also decided to verify the data was of the proper format. We implemented several checks to make sure the data was of proper length and format, and also that it didn't conflict with existing data (eg. same keys or same attribute names).
+    - Each new data input submission would create a new pixel layer, which was the best solution because it didn't disrupt the exisitng visualization and would be easy to distinguish.
 
 Data
 ---
@@ -48,8 +53,10 @@ This was a `.txt` file [here](/src/data/zoo-raw.txt). The steps to get it into u
 2. Convert both those text files to `.csv` format via [browserling](https://www.browserling.com/tools/text-to-csv). Result is:
    [header csv](/src/data/zoo-header.csv) and [body csv](src/data/zoo-body.csv).
    
-3. Convert the tabular data to 
+3. Convert the tabular data to a good data representation using JS objects. In the code, we ended up deciding to use an object to represent headers, an array of elements representing pixels, and 
 
+
+**Adding new data** See the [help guide](./help.md)
     
 Implementation
 ---
@@ -122,3 +129,10 @@ Timeline
     - via help from external npm lib (used Node.js + `package.json`), but on build creates a static JS file that is linked in main `index.html`
 - add ability to input new pixel layers to data
     - b/c we don't have a backend server, we can't do file upload, so we'll use an input box
+
+### Presentation
+
+- create new pixel layers on new line
+- add detailed documentation on how to create new pixel layers
+- fix mouse highlighting bug not resetting on layer join
+- _LOTS_ of refactoring
