@@ -65,7 +65,7 @@ function mousePos(e) { //mouse position code inspired by https://plainjs.com/jav
 ```
 
 
-- the LAB to RGB color space conversion was necessary because CSS does not natively support using LAB colors. We generated colors in LAB and mapped them to RGB when displaying using the following lab2rgb function derived from [antimatter15](https://github.com/antimatter15/rgb-lab) github. The math behind the color conversion was non-trivial which is why we did not just implement it ourselves.
+- the LAB to RGB color space conversion was necessary because CSS does not natively support using LAB colors. We generated colors in LAB and mapped them to RGB when displaying using the following lab2rgb function derived from [antimatter15's github](https://github.com/antimatter15/rgb-lab). The math behind the color conversion was non-trivial which is why we did not just implement it ourselves.
 ```js
 function lab2rgb(lab){ // non-trivial conversion code taken from https://github.com/antimatter15/rgb-lab
     var y = (lab[0] + 16) / 116,
