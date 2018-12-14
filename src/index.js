@@ -31,6 +31,7 @@ const heightOffset = 132; // distance between top of screen and svg div
 this.offset = 0; // offset, used for plotting pixel layers
 this.layers = []; // pixel layers
 this.colors = new Set(); // all colors
+this.labMap = {} // map from RGB to LAB colors so we can update luminance during OR operations
 this.baseColor = "#3a3a3a"; // color of each false pixel
 
 const JoinType = {
@@ -38,12 +39,17 @@ const JoinType = {
     OR: 'OR'
 }
 
-const getNewColor = () => { // HSL, saturation is already defined as a user parameter
-    let hue;
-    while(!hue || this.colors.has(hue)) hue = Math.round(Math.random()*360) // no duplicate colors
-    //TODO: get rid of pixelLayer means we should remove colors, or we can also assume # pixelLayers < 360
-    this.colors.add(hue);
-    return `hsl(${hue},${saturation}%,${lum}%)`
+const getNewColor = () => { // LAB color space
+    let a;
+    let b;
+    while(!a || !b || this.colors.has([a,b])) {
+        a = Math.round(Math.random()*12)*((Math.random() > 0.5) ? -1 : 1)*10
+        b = Math.round(Math.random()*12)*((Math.random() > 0.5) ? -1 : 1)*10
+    }
+    this.colors.add([a,b]);
+    let rgbColor = lab2rgb([lum,a,b])
+    this.labMap[rgbColor] = [lum, a, b]
+    return rgbColor
 }
 
 
@@ -382,8 +388,12 @@ let dehighlightAll = () => {
 // update the pixel colors in the layer by their corresponding data property
 let updatePixelsInLayer = (layer, color) => {
     layer.pixelLayer.selectAll('g').selectAll('g').selectAll('.pixel').attr('fill',(d,i) => {
-        if (layer.lastJoinType == JoinType.OR) 
-            color = color.split(",").slice(0,2).concat([`${Math.max(lum-lumDiff*(layer.data[i]-1),20)}%)`]).join()
+        if (layer.lastJoinType == JoinType.OR) {
+            let labColors = this.labMap[color];
+            if (!labColors) return color;
+            color = lab2rgb([Math.max(lum-lumDiff*(layer.data[i]-1),20), labColors[1], labColors[2]]);
+            this.labMap[color] = [Math.max(lum-lumDiff*(layer.data[i]-1),20), labColors[1], labColors[2]]
+        }
         return layer.data[i] > 0 ? color : this.baseColor
     })
 }
@@ -493,3 +503,24 @@ function mousePos(e) { //mouse position code inspired by https://plainjs.com/jav
     }
     return [pageX,pageY-heightOffset]
 }
+
+function lab2rgb(lab){ // non-trivial conversion code taken from https://github.com/antimatter15/rgb-lab
+    var y = (lab[0] + 16) / 116,
+        x = lab[1] / 500 + y,
+        z = y - lab[2] / 200,
+        r, g, b;
+  
+    x = 0.95047 * ((x * x * x > 0.008856) ? x * x * x : (x - 16/116) / 7.787);
+    y = 1.00000 * ((y * y * y > 0.008856) ? y * y * y : (y - 16/116) / 7.787);
+    z = 1.08883 * ((z * z * z > 0.008856) ? z * z * z : (z - 16/116) / 7.787);
+  
+    r = x *  3.2406 + y * -1.5372 + z * -0.4986;
+    g = x * -0.9689 + y *  1.8758 + z *  0.0415;
+    b = x *  0.0557 + y * -0.2040 + z *  1.0570;
+  
+    r = (r > 0.0031308) ? (1.055 * Math.pow(r, 1/2.4) - 0.055) : 12.92 * r;
+    g = (g > 0.0031308) ? (1.055 * Math.pow(g, 1/2.4) - 0.055) : 12.92 * g;
+    b = (b > 0.0031308) ? (1.055 * Math.pow(b, 1/2.4) - 0.055) : 12.92 * b;
+  
+    return `rgb(${Math.round(Math.max(0, Math.min(1, r)) * 255)}, ${Math.round(Math.max(0, Math.min(1, g)) * 255)}, ${Math.round(Math.max(0, Math.min(1, b)) * 255)})`;   
+  }
