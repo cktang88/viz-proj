@@ -62,7 +62,7 @@ function inputSubmitted() {
     let newheaders = document.getElementById('header_input').value.trim()
     let newbody = document.getElementById('body_input').value.trim()
 
-    // small helper func to translate raw string data into nic obj format
+    // small helper func to translate raw string data into nice obj format
     const parseRawData = (raw, numTokens) => {
         let result = []
         let validInput = true

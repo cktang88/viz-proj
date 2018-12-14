@@ -1,9 +1,5 @@
 # Process Book
 
-> NOTE: this is a WIP, and will most likely be heavily modified as the final deadline approaches.
-
-
-
 Overview and Motivation
 ---
 > Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal.
@@ -53,10 +49,14 @@ This was a `.txt` file [here](/src/data/zoo-raw.txt). The steps to get it into u
 2. Convert both those text files to `.csv` format via [browserling](https://www.browserling.com/tools/text-to-csv). Result is:
    [header csv](/src/data/zoo-header.csv) and [body csv](src/data/zoo-body.csv).
    
-3. Convert the tabular data to a good data representation using JS objects. In the code, we ended up deciding to use an object to represent headers, an array of elements representing pixels, and 
+3. Convert the tabular data to a good data representation using JS objects. In the code, we ended up deciding to use an object to represent headers, an array of elements representing pixels, a set to represent the attributes, and an array to represent layer objects. This part takes place in multiple functions: `addHeaderData()` for processing headers and `addBodyData()` for processing the body. 
+   - Processing headers essentially creates a dictionary or map, with the key equal to the key of the header, and the value being an object of the form `{ attribute: some_attribute, value: some_value}`. 
+   - Processing the body is harder - first we must do a lookup using the key in the headers dictionary in order to find the object with the attribute and value. Then given those, we create a new object with an `attribute` field, and it's value is equal to the normalized/cleaned value from the headers object. The reason we clean it is because values are given as "true" or "false" strings, and we want to represent them in binary format (0 or 1).
 
 
-**Adding new data** See the [help guide](./help.md)
+**Adding new data** See the [help guide](./help.md).
+
+Processing new data is done via the `inputSubmitted()` method, which has a helper function to help convert the csv into nice JS object data, and then calls `addHeaderData()` for the header, and `addNewAttr()` for the body, which is a specialized version of `addBodyData()`.
     
 Implementation
 ---
@@ -73,7 +73,7 @@ Implementation
     ![Hover corresponding pixels](./images/hover.png)
 
 - Drag and dropping PixelLayers onto each other calls AND/OR operational joins on the dataset of each PixelLayer
-
+    > This is really only possible to be shown as an animation, so the best way to see this would be to try it yourself!
     
 
 - Ability to easily switch between AND/OR joins via a dropdown control.
@@ -84,11 +84,11 @@ Implementation
     ![OR join](./images/or.png)
 
 
-    In addition, as seen above, each PixelLayer has a **label that is updated** as operational joins are performed on it and also **text wrapping** is supported
+    In addition, as seen above, each PixelLayer has a **label that is updated** as operational joins are performed on it and also **text wrapping** is supported on the new label (which can get quite long because it tracks all operations done with that pixelLayer over time).
 
 
 - Ability to add new PixelLayers to the visualization by importing new attribute data into the existing visualization
-
+    > There isn't anything to show here, the new pixelLayer basically looks similar to existing pixelLayers, except with new data.
 
 - In addition, we also took special care to make sure we supported both Chrome and Firefox, which was challenging because the two browsers had slightly different rendering behavior and window/event APIs differed slightly.
 
