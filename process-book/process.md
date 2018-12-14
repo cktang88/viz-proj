@@ -21,17 +21,17 @@ Questions
 > What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
 
 - How to represent data so that pixel layers and the interactions would be easy to implement and extend?
-    - our representation changed multiple times throughout the entire project.
+    - Our data structure representation changed multiple times throughout the entire project. However, by trying to faithfully follow the whitepaper as closely and authentically as possible, we eventually settled on our current implementation, which uses a series of different JavaScript objects and arrays to represent different aspects of the data. This allows for easy visualization and supports intuitive interaction because we spent a lot of thought on how to process and clean the data into a convenient format initially.
 
 - What aspects of the data needs to be most apparent in the visualization and easy to discern?
-    - the individual pixel layers representing each attribute, and the pixel corresponding to the same animal being highlighted in all pixel layers on mouse hover.
+    - The individual pixel layers representing each attribute, and the pixel corresponding to the same animal being highlighted in all pixel layers on mouse hover. The pixels are also important because that represents each individual animal, and grouping them into pixelLayers is an effective way to process that large amount of binary data.
 
 - What interactions would be most useful for the users?
-    - the drag-and-drop is very crucial because that's the main way of differentiating large amounts of binary data in two different pixel layers.
-    - Mouse hovering was also very important. People needed to be able to easily see which pixels correspond to the same element across multiple attributes.
+    - The drag-and-drop is very crucial because that's the main way of differentiating large amounts of binary data in two different pixel layers.
+    - Mouse hovering was also very important. People needed to be able to easily see which pixels correspond to the same element across multiple attributes. The slight opacity of the matrix helped you see what cells were underneath.
 
 - How would we represent data is an honest way?
-    - use HSL coloring, and also AND/OR joins should work as expected. In order to further show the effect of the OR join, we implemented the different luminosities keeping the same hue, so that pixels that show more similarity between the combined pixel layers would be darker for easy viewing.
+    - Use LAB coloring (to best present uniform color luminance), and also AND/OR joins should work as expected. In order to further show the effect of the OR join, we implemented the different luminosities keeping the same hue, so that pixels that show more similarity between the combined pixel layers would be darker for easy viewing.
   
 - How would users be able to add new data?
     - Users would be able to add data via an input box. We couldn't do server uploading, because the project was front-end only. The data format the users inputted was very important - we decided for DRY code, to have similar pattern to the cleaned csv data, and also decided to verify the data was of the proper format. We implemented several checks to make sure the data was of proper length and format, and also that it didn't conflict with existing data (eg. same keys or same attribute names).
